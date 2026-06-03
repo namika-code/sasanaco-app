@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="py-4 mx-auto" style="max-width: 800px;">
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body greeting-box">
+
+            <div class="greeting-line">
+
+                <span class="greeting-text">
+                    {% if current_time.hour < 10 %} ☀ おはようございます {% elif current_time.hour < 17 %} 🌤 こんにちは {% else %} 🌙
+                        こんばんは {% endif %} </span>
+
+                        <span class="greeting-name">
+                            {{ current_user.full_name }} さん
+                        </span>
+
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- =========================
+        メニュー
+    ========================== -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-6">
+            <a href="{{ url_for('task.index') }}" class="btn btn-primary w-100 py-3 shadow-sm">
+
+                <div class="fs-5 fw-bold">📋</div>
+                タスク管理
+
+            </a>
+        </div>
+
+        <div class="col-6">
+            <a href="{{ url_for('stock.index') }}" class="btn btn-success w-100 py-3 shadow-sm">
+
+                <div class="fs-5 fw-bold">📦</div>
+                在庫管理
+
+            </a>
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+        Information
+    ========================== -->
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">🔔 Information</h5>
+        </div>
+
+        <div class="card-body">
+
+            <!-- タスク通知 -->
+            {% if alerts and alerts|length > 0 %}
+
+            <div class="mb-4">
+
+                <h6 class="fw-bold text-primary mb-3">
+                    タスク通知
+                </h6>
+
+                <ul class="list-group">
+
+                    {% for alert in alerts %}
+
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            {% if alert.alert_type == 'group_deleted' %}
+
+                            <span class="text-danger fw-bold">
+                                【グループ削除】
+                            </span>
+
+                            {{ alert.message }}
+
+                            {% else %}
+
+                            <span class="fw-bold">
+                                【{{ alert.task.title }}】
+                            </span>
+
+                            {{ alert.message }}
+
+                            {% endif %}
+
+                        </div>
+
+                        <!-- 既読 -->
+                        <form action="{{ url_for('top.read_alert', alert_id=alert.alert_id) }}" method="post">
+
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                            <button type="submit" class="btn btn-outline-secondary btn-sm">
+
+                                既読
+
+                            </button>
+
+                        </form>
+
+                    </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            </div>
+
+            {% else %}
+
+            <div class="alert alert-light border">
+                タスクの更新はありません。
+            </div>
+
+            {% endif %}
+
+
+            <!-- 在庫通知 -->
+            {% if current_user.department == '総務' %}
+
+            <div>
+
+                <h6 class="fw-bold text-success mb-3">
+                    在庫アラート
+                </h6>
+
+                {% if low_stock_products and low_stock_products|length > 0 %}
+
+                <div class="list-group">
+
+                    {% for item in low_stock_products %}
+
+                    <a href="{{ url_for('stock.inout', product_id=item.product_id) }}"
+                        class="list-group-item list-group-item-action">
+
+                        <span class="text-danger fw-bold">
+                            ⚠ {{ item.product_name }}
+                        </span>
+                    </a>
+
+                    {% endfor %}
+
+                </div>
+
+                {% else %}
+
+                <div class="alert alert-success mb-0">
+                    在庫の不足はありません。
+                </div>
+
+                {% endif %}
+
+            </div>
+
+            {% endif %}
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+    .greeting-box {
+        display: flex;
+        align-items: center;
+    }
+
+    /* 1行にまとめる */
+    .greeting-line {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        flex-wrap: wrap;
+        /* スマホでも崩れない */
+    }
+
+    /* 挨拶 */
+    .greeting-text {
+        font-size: 22px;
+        font-weight: 700;
+        color: #111827;
+        /* 統一（黒系） */
+        letter-spacing: 0.3px;
+    }
+
+    /* 名前（同格にするのがポイント） */
+    .greeting-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: #111827;
+        /* ←挨拶と完全統一 */
+        white-space: nowrap;
+    }
+
+    /* スマホ調整 */
+    @media (max-width: 576px) {
+        .greeting-text {
+            font-size: 18px;
+        }
+
+        .greeting-name {
+            font-size: 18px;
+        }
+
+        .greeting-line {
+            gap: 6px;
+        }
+    }
+</style>
+
+{% endblock %}

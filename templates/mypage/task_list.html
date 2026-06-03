@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if current_user.user_id == 1 %}
+
+<div class="container d-flex justify-content-center align-items-start" style="min-height: 80vh; padding-top: 40px;">
+
+    <div style="width: 100%; max-width: 900px;">
+
+        <div class="d-flex flex-wrap align-items-center px-3 gap-3 mb-3">
+            <h4 class="mb-0 text-truncate flex-grow-1">タスク 一覧</h4>
+            <div class="d-flex gap-2 flex-shrink-0">
+                <a href="{{ url_for('mypage.index') }}" class="btn btn-outline-secondary btn-sm text-nowrap">
+                    管理者メニューへ戻る
+                </a>
+                <a href="{{ url_for('task.index') }}" class="btn btn-outline-dark btn-sm text-nowrap">
+                    タスク管理へ
+                </a>
+            </div>
+        </div>
+
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+
+        <form method="post" action="{{ url_for('mypage.delete_selected_tasks') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="card bg-light-subtle shadow-sm mb-4 overflow-hidden" style="border-radius: 12px;">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 custom-task-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center" style="width: 60px;">選択</th>
+                                <th style="width: 80px;">ID</th>
+                                <th style="width: 140px;">作成者</th>
+                                <th style="width: 120px;">開始日</th>
+                                <th style="width: 120px;">締切日</th>
+                                <th style="width: 140px;">作成日</th>
+                                <th>タイトル</th>
+                                <th style="width: 140px;">内容</th>
+                                <th style="width: 160px;">グループ</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white">
+                            {% for task in tasks %}
+                            <tr>
+                                <td class="text-center">
+                                    <input type="checkbox" name="task_ids" value="{{ task.task_id }}"
+                                        class="form-check-input task-checkbox" style="cursor: pointer;">
+                                </td>
+                                <td class="text-code">#{{ task.task_id }}</td>
+                                <td class="text-dark fw-medium">{{ task.user.full_name }}</td>
+                                <td class="text-secondary">{{ task.start_date.strftime('%Y-%m-%d') }}</td>
+                                <td class="text-secondary">{{ task.due_date.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <span class="text-dark d-block" style="font-size: 0.85rem;">{{
+                                        task.creation_date.strftime('%Y-%m-%d') }}</span>
+                                    <span class="text-muted d-block opacity-75" style="font-size: 0.75rem;">{{
+                                        task.creation_date.strftime('%H:%M') }}</span>
+                                </td>
+                                <td class="fw-bold text-dark" style="font-size: 0.95rem;">{{ task.title }}</td>
+                                <td>
+                                    <div class="text-truncate text-muted small" style="max-width: 140px;"
+                                        title="{{ task.task_content }}">
+                                        {{ task.task_content[:8] }}{% if task.task_content|length > 8 %}…{% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if task.group_id is none %}
+                                    <span class="badge bg-secondary-subtle text-secondary px-2 py-1"
+                                        style="border-radius: 6px;">プライベート</span>
+                                    {% else %}
+                                    <span class="badge bg-primary-subtle text-primary px-2 py-1 async-member-popover"
+                                        style="border-radius: 6px; cursor: pointer;"
+                                        data-group-id="{{ task.group_id }}">
+                                        {{ task.group.groupname }} <i class="bi bi-info-circle-fill ms-1"
+                                            style="font-size: 0.75rem; opacity: 0.8;"></i>
+                                    </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mb-5">
+                <button type="button" class="btn btn-outline-danger btn-md px-4 shadow-sm fw-bold"
+                    id="openDeleteModalBtn" data-bs-toggle="modal" data-bs-target="#deleteTasksModal"
+                    style="border-radius: 6px;" disabled>
+                    <i class="bi bi-trash3 me-2"></i>選択したタスクを削除
+                </button>
+            </div>
+
+            <div class="modal fade" id="deleteTasksModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-sm">
+                    <div class="modal-content border-0 shadow-lg" style="border-radius: 14px;">
+                        <div class="modal-body text-center p-4">
+                            <div class="text-danger mb-3" style="font-size: 2rem;">
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-2">タスクの削除確認</h6>
+                            <p class="text-secondary small mb-0 px-1">
+                                選択したタスクを完全に削除しますか？<br>
+                                <span class="text-danger fw-bold" style="font-size: 0.75rem;">※この操作は取り消せません。</span>
+                            </p>
+                        </div>
+                        <div class="modal-footer border-top-0 d-flex justify-content-center gap-2 pb-4 pt-0">
+                            <button type="button" class="btn btn-light btn-sm px-3 border" data-bs-dismiss="modal"
+                                style="border-radius: 6px;">キャンセル</button>
+                            <button type="submit" class="btn btn-danger btn-sm px-3"
+                                style="border-radius: 6px;">削除する</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% else %}
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const checkboxes = document.querySelectorAll('.task-checkbox');
+        const modalDeleteBtn = document.getElementById("openDeleteModalBtn");
+
+        function updateDeleteButton() {
+            const checkedCount = document.querySelectorAll('.task-checkbox:checked').length;
+            modalDeleteBtn.disabled = checkedCount === 0;
+
+            if (checkedCount > 0) {
+                modalDeleteBtn.className = "btn btn-danger btn-md px-4 shadow-sm fw-bold";
+            } else {
+                modalDeleteBtn.className = "btn btn-outline-danger btn-md px-4 shadow-sm fw-bold";
+            }
+        }
+        updateDeleteButton();
+        checkboxes.forEach(cb => cb.addEventListener("change", updateDeleteButton));
+
+        // 動的ポップオーバー
+        const popoverElements = document.querySelectorAll('.async-member-popover');
+        const groupCache = {};
+        const popoverTitleHtml = "<i class='bi bi-people-fill me-1 text-primary'></i> メンバー一覧";
+
+        popoverElements.forEach(function (el) {
+            const groupId = el.getAttribute('data-group-id');
+            const popover = new bootstrap.Popover(el, {
+                trigger: 'hover focus',
+                html: true,
+                placement: 'top',
+                title: popoverTitleHtml,
+                content: "<div class='text-muted small py-1'><span class='spinner-border spinner-border-sm me-2' role='status'></span>読み込み中...</div>"
+            });
+
+            el.addEventListener('show.bs.popover', function () {
+                if (groupCache[groupId]) {
+                    popover.setContent({ '.popover-header': popoverTitleHtml, '.popover-body': groupCache[groupId] });
+                    return;
+                }
+                fetch(`/task/api/group/${groupId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        let contentHtml = "<div class='small py-1'>";
+                        if (data.members && data.members.length > 0) {
+                            data.members.forEach(member => {
+                                let iconColorClass = (member.gender === "male") ? "text-primary" : (member.gender === "female") ? "text-danger" : "text-secondary";
+                                contentHtml += `<div class='mb-1 text-dark'><i class='bi bi-person-fill ${iconColorClass} me-1'></i>${member.name} <span class='text-muted' style='font-size:0.75rem;'>(${member.department || '所属なし'})</span></div>`;
+                            });
+                        } else {
+                            contentHtml += "<div class='text-muted small'>メンバーはいません</div>";
+                        }
+                        contentHtml += "</div>";
+                        groupCache[groupId] = contentHtml;
+                        popover.setContent({ '.popover-header': popoverTitleHtml, '.popover-body': contentHtml });
+                    });
+            });
+        });
+    });
+</script>
+{% endblock %}

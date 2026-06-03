@@ -1,0 +1,113 @@
+<!-- タスク一覧画面 モーダルの処理 -->
+<!-- 詳細Modal -->
+<div class="modal fade" id="detailModal_{{ task.task_id }}" tabindex="-1"
+  aria-labelledby="ModalLabel_{{ task.task_id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="ModalLabel_{{ task.task_id }}">{{ task.title }}</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- 内容表示 -->
+        {% if task.group_id is none %}
+        グループ: プライベートタスクです。<br>
+        {% else %}
+        グループ: {{ task.group.groupname }}<br>
+        {% endif %}
+
+        {% if not task.task_content %}
+        タスク内容: (未登録)<br>
+        {% else %}
+        タスク内容: <div style="white-space: pre-wrap;">{{ task.task_content }}</div>
+        {% endif %}
+
+        開始日: {{ task.start_date.strftime('%Y-%m-%d') }}<br>
+        締切日: {{ task.due_date.strftime('%Y-%m-%d') }}<br>
+        作成者: {{ task.user.full_name }}<br>
+        作成日: {{ task.creation_date.strftime('%Y-%m-%d') }}
+        {% if task.update_date %}
+        <br>最終更新: {{ task.update_date.strftime('%Y-%m-%d') }}
+        {% else %}
+        <br>(未更新)
+        {% endif %}
+
+        <hr>
+
+        {% if not task.task_comment %}
+        <p>　コメントはありません。</p>
+        {% else %}
+        コメント:
+        <p style="white-space: pre-wrap; max-height: 150px; overflow-y: auto;">{{ task.task_comment }}</p>
+        {% endif %}
+
+        <!-- コメント追加フォーム（横幅100%） -->
+        <form id="commentForm_{{ task.task_id }}" method="post" action="{{ url_for('task.add_comment', task_id=task.task_id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <!-- 入力ボックスのエリア -->
+          <div class="mb-3 input-wrapper task-input-counter-box">
+            <label for="comment_{{ task.task_id }}" class="form-label text-secondary small">コメントの追加(最大200文字)</label>
+            <textarea class="form-control counter-textarea" id="comment_{{ task.task_id }}" name="task_comment" rows="3" maxlength="200"></textarea>
+            <div class="char-count" id="commentCount_{{ task.task_id }}">0 / 200</div>
+          </div>
+        </form>
+
+        <!-- 💡 ボタン2つを横一列に適度な間隔で並べるエリア -->
+        <div class="d-flex align-items-center gap-2 mb-2">
+          
+          <!-- コメント追加ボタン -->
+          <button type="button" class="btn btn-outline-success btn-sm" id="addBtn_{{ task.task_id }}" disabled
+            data-bs-toggle="modal" data-bs-target="#confirmModal_{{ task.task_id }}">
+            コメント追加
+          </button>
+
+          <!-- コメント削除ボタン＆フォーム（作成者本人のみ表示） -->
+          {% if task.user.user_id == current_user.user_id %}
+          <form id="deleteCommentForm_{{ task.task_id }}" method="post" action="{{ url_for('task.delete_comment', task_id=task.task_id) }}" class="m-0">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
+              data-bs-target="#deleteCommentModal_{{ task.task_id }}" {% if not task.task_comment %}disabled{% endif %}>
+              コメント削除
+            </button>
+          </form>
+          {% endif %}
+
+        </div>
+
+      </div> <!-- modal-body -->
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-dark btn-sm" data-bs-dismiss="modal">閉じる</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- コメント追加確認Modal -->
+<div class="modal fade" id="confirmModal_{{ task.task_id }}" tabindex="-1" style="z-index: 1060;">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content confirm-bg">
+      <div class="modal-body">コメントを追加します</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-dark btn-sm" data-bs-dismiss="modal">キャンセル</button>
+        <button type="submit" form="commentForm_{{ task.task_id }}" class="btn btn-outline-success btn-sm">追加する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- コメント削除確認Modal -->
+<div class="modal fade" id="deleteCommentModal_{{ task.task_id }}" tabindex="-1" style="z-index: 1060;">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content confirm-bg">
+      <div class="modal-body">コメントを削除します</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-dark btn-sm" data-bs-dismiss="modal">キャンセル</button>
+        <button type="submit" form="deleteCommentForm_{{ task.task_id }}" class="btn btn-outline-danger btn-sm">削除する</button>
+      </div>
+    </div>
+  </div>
+</div>

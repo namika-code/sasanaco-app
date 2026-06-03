@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="game-wrapper">
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="mt-4">
+        <a href="{{ url_for('rest.index') }}" class="btn btn-secondary">
+            休憩へ
+        </a>
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/block_game.js') }}"></script>
+
+<style>
+    .game-wrapper {
+        display: flex;
+        flex-direction: column;
+
+        align-items: center;
+    }
+
+    #gameCanvas {
+        background: #222;
+
+        border: 2px solid #fff;
+
+        max-width: 100%;
+    }
+</style>
+
+{% endblock %}

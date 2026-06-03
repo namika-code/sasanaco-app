@@ -1,0 +1,24 @@
+# GitHubへのアップ対象から除外するもの
+# すでにGitにアップしてるものはコード追加とコマンド必須
+
+# 仮想環境
+venv/
+
+# Conda環境
+.conda/
+
+# Pythonキャッシュ
+__pycache__/
+*.pyc
+
+# migration cache
+migrations/__pycache__/
+
+# 環境変数
+.env
+
+# Flask instance
+instance/
+
+# エディタ
+.vscode/

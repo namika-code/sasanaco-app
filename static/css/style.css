@@ -1,0 +1,777 @@
+/*  =========================
+    base style
+    ========================= */
+/*薄いブルー*/
+body {
+    background: linear-gradient(135deg, #f0f4ff, #e8faff);
+}
+
+.main-container {
+    background: white;
+    border-radius: 12px;
+    padding-left: 20px;
+    padding-right: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    /*ここまで背景色*/
+    /*フル画面で幅が細くなる*/
+    max-width: 480px;
+    /* ← スマホアプリのような幅 */
+    margin: 40px auto 0 auto;
+    /* ← 中央寄せ */
+    padding: 10px;
+}
+
+.container {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    margin: 0 auto !important;
+}
+
+.menu-btn {
+    width: 150px;
+    /* ← 横幅を150pxに統一 */
+    padding: 10px 0;
+    /* ← 高さ調整 */
+    font-size: 16px;
+    /* ← 文字の大きさ */
+    font-weight: 600;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.menu-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* ← 中央寄せ */
+    gap: 10px;
+    /* ← ボタンの間の余白 */
+}
+
+/* アラート全体をコンパクトに */
+.alert {
+    padding: 6px 10px;
+    margin-bottom: 8px;
+    /* 下の余白も縮める */
+}
+
+/* タイトルの余白を削る */
+.alert h5 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+}
+
+/* リストの余白を削る */
+.alert ul {
+    margin: 0;
+    padding-left: 16px;
+}
+
+.no-stock {
+    font-size: 14px;
+    /* ← 好きな大きさに調整 */
+}
+
+.alert-title {
+    color: red;
+    font-weight: bold;
+}
+
+.navbar-brand {
+    margin-right: 0 !important;
+}
+
+.navbar-user-area {
+    line-height: 1.1;
+    text-align: right;
+}
+
+.navbar-user-area .navbar-brand {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    margin-right: 0.3rem;
+}
+
+.navbar-user-area .navbar-text {
+    margin-top: -4px;
+    font-size: 1rem;
+}
+
+.navbar-nav {
+    flex-wrap: nowrap;
+}
+
+.navbar-nav .nav-link {
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+    white-space: nowrap;
+}
+
+/*  =========================
+    ユーザー登録画面
+    =========================  */
+.userform-description {
+    color: gray;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+/*  =========================
+    タスク一覧 ボタンレイアウト
+    =========================  */
+
+/* 1. すべての画面サイズ共通の基本設定 */
+.task-btn-container {
+    /* HTML構造(form)に邪魔されないようgridとcontentsの魔法をかける */
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: 1fr !important;
+    gap: 4px !important;
+    /* ボタン同士の隙間を4pxで完全固定 */
+
+    width: 100% !important;
+    justify-content: stretch !important;
+    margin-top: 10px !important;
+    /* 文字との間に少し余白を確保 */
+}
+
+/* フォームの存在をCSS上ディスプレイルックから消し去る */
+.task-btn-container form {
+    display: contents !important;
+}
+
+/* ボタン自体の共通基本設定（余白のクリアと中央揃え） */
+.task-btn-container button.btn-vertical-text,
+.task-btn-container .btn-vertical-text {
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    width: 100% !important;
+    /* 親のグリッド幅いっぱいに広がる */
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+
+    font-size: 12px !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+}
+
+/*  ---------------------------------------------------
+    【条件1】スマホ（767.98px以下）
+    （１列表示）
+    --------------------------------------------------- */
+@media (max-width: 767.98px) {
+
+    .task-btn-container button.btn-vertical-text,
+    .task-btn-container .btn-vertical-text {
+        height: auto !important;
+        padding: 6px 0 !important;
+        font-size: 11px !important;
+        writing-mode: horizontal-tb !important;
+        /* 横書き */
+    }
+}
+
+/*  ---------------------------------------------------
+    【条件2】タブレット・中画面PC（768px 〜 1199.98px）
+    （狭い３列表示）
+    --------------------------------------------------- */
+@media (min-width: 768px) and (max-width: 1199.98px) {
+
+    .task-btn-container button.btn-vertical-text,
+    .task-btn-container .btn-vertical-text {
+        /* カードの伸縮に合わせてボタンの横幅がフレキシブルに動く */
+        height: 52px !important;
+        /* 縦書き用の高さ */
+        padding: 0 4px !important;
+
+        /* 縦書きに切り替え */
+        writing-mode: vertical-rl !important;
+        text-combine-upright: none !important;
+    }
+}
+
+/*  ---------------------------------------------------
+    【条件3】大画面デスクトップ（1200px以上）
+    （広い３列表示）
+    --------------------------------------------------- */
+@media (min-width: 1200px) {
+
+    .task-btn-container button.btn-vertical-text,
+    .task-btn-container .btn-vertical-text {
+        height: 32px !important;
+        /* 横書き用の高さ */
+        padding: 0 !important;
+
+        /* 横書きに戻す */
+        writing-mode: horizontal-tb !important;
+    }
+}
+
+/* ===================================================
+    タスクフォーム ボックス幅・パーツ配置
+   =================================================== */
+/* 開始日・締切日の幅をカードいっぱいの100%に拡張上書き */
+.day-select {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* 
+   コンテナ：
+   右側にボタンが配置されるための「絶対的な空きスペース（ボタン幅＋隙間＝約110px）」を
+   あらかじめ padding-right で確保しておきます。
+*/
+.task-group-row-container {
+    position: relative !important;
+    width: 100% !important;
+    padding-right: 110px !important;
+    /* ← 右側にボタン用の固定スペースを確保 */
+    box-sizing: border-box !important;
+}
+
+/* 
+   プルダウンを包む箱：
+   ここを基準点（relative）に指定します。
+   マクロ内部のラベルやエラーが上下にどう動こうが、この箱の底辺と高さはプルダウン単体と同期します。
+*/
+.task-group-select-box {
+    position: relative !important;
+    width: 100% !important;
+}
+
+/* プルダウンおよびSelect2コンテナの幅設定 */
+.group-select,
+[name="group_id"],
+.select2-container--bootstrap-5,
+.select2-container {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* プルダウンの入力欄の高さを38pxに固定 */
+[name="group_id"],
+.select2-container .select2-selection--single {
+    height: 38px !important;
+}
+
+/* 
+   ボタンの配置：
+   コンテナの右端の空きスペース（あらかじめpaddingで空けた場所）に、
+   「下辺ぴったり（bottom: 0）」で強制的に固定配置します。
+*/
+#groupActionBtn {
+    position: absolute !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    /* ← マクロの隙間に惑わされず、下辺に強制接着 */
+    width: 100px !important;
+    /* ズレを防ぐためボタンの横幅を固定 */
+    height: 38px !important;
+    /* プルダウンと完全に同じ高さ */
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
+}
+
+/*  =========================
+    入力ボックスの文字数カウンタ
+    ========================= */
+
+.input-wrapper {
+    position: relative;
+}
+
+.char-count {
+    position: absolute;
+    bottom: 6px;
+    font-size: 12px;
+    color: #888;
+    pointer-events: none;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 0 4px;
+    border-radius: 4px;
+}
+
+/* 上記タスク用で関数作ってるぽいから時間ないし各ページ用カウント */
+.field-char-count {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+    text-align: right;
+}
+
+/* タスク */
+.task-input-counter-box .char-count {
+    right: 10px;
+}
+
+.task-input-counter-box .counter-textarea {
+    padding-bottom: 22px;
+}
+
+/* グループ */
+.group-input-counter-box .char-count {
+    right: 10px;
+}
+
+.group-input-counter-box .counter-input {
+    padding-right: 90px;
+}
+
+/* =========================
+    タスクフォーム グループメンバーフレーム
+   ========================= */
+#groupMembersContainer {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    flex-shrink: 0;
+    background-color: #fff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* hover */
+#groupMembersContainer:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.10);
+}
+
+/* =========================
+    タスクフォーム メンバー表示アニメーション
+   ========================= */
+#groupMembersSizer {
+
+    background-color: #fff;
+
+    padding: 10px 12px;
+
+    border-radius: 6px;
+
+    overflow: hidden;
+
+    transition:
+        opacity 0.18s ease;
+}
+
+.groupMembersInner {
+
+    transition:
+        opacity 0.18s ease,
+        transform 0.18s ease;
+
+    will-change:
+        opacity,
+        transform;
+}
+
+#groupMembersSizer.is-fading .groupMembersInner {
+
+    opacity: 0;
+
+    transform: translateY(6px);
+}
+
+#groupMembersSizer.is-hidden {
+
+    display: none;
+}
+
+#groupMembersLabel {
+    font-weight: 600;
+}
+
+/*  =========================
+    タスクフォーム ラジオボタン横並び表示
+    =========================  */
+.radio-inline ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 20px;
+}
+
+.radio-inline li {
+    display: inline;
+}
+
+/*  =========================
+    タスクフォーム エラー表示部
+    =========================  */
+.is-invalid-input {
+    border: 1px solid #dc3545 !important;
+    background-color: #fff5f5 !important;
+    box-shadow: none;
+}
+
+
+/*  =========================
+    モーダル表示関連
+    =========================  */
+.modal .form-control {
+    color: #212529;
+    background-color: #fff;
+    caret-color: #333;
+}
+
+.modal .form-control:focus {
+    color: #212529;
+    background-color: #fff;
+    border-color: #86b7fe;
+    box-shadow: none;
+}
+
+.group-label {
+    font-weight: 600;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.group-name {
+    font-size: 1.5rem;
+}
+
+#memberSelectLabel {
+    font-weight: 600;
+}
+
+
+/*  =========================
+    在庫管理
+    =========================  */
+/* 商品カテゴリカード */
+.category-card {
+    border-radius: 16px;
+    border: none;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: none;
+}
+
+/* タイトル */
+.category-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+
+    background: linear-gradient(90deg, #60a5fa, #34d399);
+    color: white;
+
+    margin: -16px -16px 14px -16px;
+    padding: 12px 14px;
+
+    border-radius: 16px 16px 0 0;
+}
+
+
+/* 在庫カード */
+.stock-item {
+    display: block;
+    background: #f9fafb;
+    border: 1px solid #eef2f7;
+    border-radius: 12px;
+    padding: 10px 12px;
+    transition: all 0.15s ease;
+}
+
+.stock-item:hover {
+    background: #eef6ff;
+    border-color: #bfdbfe;
+    transform: translateY(-2px);
+}
+
+/* hover */
+.stock-item:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+}
+
+/* 在庫表名 */
+.stock-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: #111827;
+}
+
+/* 在庫数 */
+.stock-item small {
+    font-size: 14px;
+}
+
+.product-header {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+.text-danger {
+    color: #ef4444 !important;
+}
+
+/* 在庫管理 備考欄 */
+.table td {
+    vertical-align: top !important;
+}
+
+/* 枠（スクロール） */
+.note-box {
+    width: 100%;
+    max-width: 300px;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    padding: 2px 6px;
+}
+
+/* テキスト折り返し */
+.note-inner {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+
+    line-height: 1.1;
+    margin: 0;
+    padding: 0;
+}
+
+/* プレイスホルダー */
+.form-control::placeholder {
+    color: #d0d0d0 !important;
+    opacity: 1 !important;
+}
+
+
+/*  =========================
+    ボタン統一デザイン
+    ========================= */
+
+.btn {
+    border-radius: 10px !important;
+    font-weight: 600;
+    transition: all 0.15s ease;
+    box-shadow: none !important;
+}
+
+/* Primary（入出庫） */
+.btn-primary {
+    background: linear-gradient(90deg, #3b82f6, #6366f1);
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    opacity: 0.95;
+}
+
+/* Success（グラフ・Excel） */
+.btn-success {
+    background: linear-gradient(90deg, #10b981, #34d399);
+    border: none;
+}
+
+.btn-success:hover {
+    transform: translateY(-1px);
+    opacity: 0.95;
+}
+
+/* Danger（削除） */
+.btn-danger {
+    background: linear-gradient(90deg, #ef4444, #f87171);
+    border: none;
+}
+
+.btn-danger:hover {
+    transform: translateY(-1px);
+    opacity: 0.95;
+}
+
+/* Secondary（戻る） */
+.btn-secondary {
+    background: #e5e7eb;
+    color: #374151;
+    border: none;
+}
+
+.btn-secondary:hover {
+    background: #d1d5db;
+    transform: translateY(-1px);
+}
+
+/*  ===================================================
+    管理者ページ 描写関連
+    =================================================== */
+/* カード全体の最大幅を設定 */
+.admin-form-card {
+    border-radius: 12px;
+    max-width: 500px;
+}
+
+/* グループ名入力欄：高さを統一し、横幅をカードいっぱいに */
+.group-name-input {
+    height: 32px !important;
+    width: 100% !important;
+}
+
+/* メンバー選択ボックス：横幅を揃え、高さを固定してスクロール可能に */
+.member-scroll-box {
+    width: 100% !important;
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+/* チェックボックスの行のデザイン */
+.border-bottom-dashed {
+    border-bottom: 1px dashed #e9ecef;
+}
+
+.border-bottom-dashed:last-child {
+    border-bottom: none;
+}
+
+.form-check {
+    cursor: pointer;
+}
+
+.form-check-label {
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.form-check:hover {
+    background-color: #f8f9fa;
+}
+
+.form-select {
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+}
+
+select.form-select[style*="32px"] {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: 30px !important;
+    /* 全体の高さに文字を合わせる */
+    vertical-align: middle !important;
+}
+
+.custom-task-table th {
+    font-size: 0.85rem;
+    color: #555;
+    padding: 12px 16px !important;
+}
+
+.custom-task-table td {
+    padding: 14px 16px !important;
+}
+
+.text-code {
+    font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color: #888;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.popover {
+    border: none !important;
+    box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+    border-radius: 8px !important;
+}
+
+.popover-header {
+    background-color: #f8f9fa !important;
+    border-bottom: 1px solid #eee !important;
+    font-weight: bold !important;
+    font-size: 0.85rem !important;
+    padding: 8px 12px !important;
+}
+
+/* ユーザーリスト 管理者(id=1)の行の見た目を調整 */
+.table-secondary {
+    cursor: not-allowed;
+}
+
+.user-checkbox:disabled {
+    cursor: not-allowed;
+}
+
+/*  ==========================================================================
+    マイページ：プロフィールカード ＆ テキストボックスの近代化
+    ========================================================================== */
+.profile-card {
+    max-width: 400px;
+    margin: 0 auto 3rem auto;
+}
+
+/* プロフィール編集ボタンをカード幅に合わせる */
+.profile-card .btn {
+    display: block;
+    /* 横いっぱいに広げる */
+    width: 100%;
+    /* カード幅に追従 */
+    padding: 0.6rem;
+    /* 高さも少し出して押しやすく */
+    font-size: 1rem;
+    /* 文字も少し大きく強調 */
+}
+
+/* ラベルのスタイル調整 */
+.custom-form-group label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+}
+
+/* 💡 テキストボックス・セレクトボックスをモダンに変身させる魔法 */
+.custom-form-group input[type="text"],
+.custom-form-group input[type="password"],
+.custom-form-group input[type="email"],
+.custom-form-group select {
+    display: block;
+    width: 100%;
+    padding: 0.475rem 0.75rem;
+    /* 内側に程よいゆとりを確保 */
+    font-size: 0.95rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    /* 線を少し細く、上品に */
+    border-radius: 6px !important;
+    /* ボタンと同じ「6px」の角丸に統一！ */
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* 💡 入力ボックスをクリック（フォーカス）したときの、ふわっとした美しい青い光 */
+.custom-form-group input[type="text"]:focus,
+.custom-form-group input[type="password"]:focus,
+.custom-form-group input[type="email"]:focus,
+.custom-form-group select:focus {
+    color: #212529;
+    background-color: #fff;
+    border-color: #86b7fe;
+    /* 優しい青色の枠線 */
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    /* 柔らかな青い影の余韻 */
+}
+
+@media (max-width: 576px) {
+    .profile-card {
+        max-width: 100%;
+        margin: 0 12px 3rem 12px;
+    }
+}

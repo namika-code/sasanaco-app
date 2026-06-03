@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if current_user.user_id == 1 %}
+
+<div class="container d-flex justify-content-center align-items-start" style="min-height: 80vh; padding-top: 40px;">
+
+    <div style="width: 100%; max-width: 900px;">
+
+        <div class="d-flex flex-wrap align-items-center px-3 gap-3 mb-3">
+            <h4 class="mb-0 text-truncate flex-grow-1">タスク 登録</h4>
+            <div class="d-flex gap-2 flex-shrink-0">
+                <a href="{{ url_for('mypage.index') }}" class="btn btn-outline-secondary btn-sm text-nowrap">
+                    管理者メニューへ戻る
+                </a>
+                <a href="{{ url_for('task.index') }}" class="btn btn-outline-dark btn-sm text-nowrap">
+                    タスク管理へ
+                </a>
+            </div>
+        </div>
+
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+
+        <form method="post" action="{{ url_for('mypage.admin_task_register') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            {% for i in range(10) %}
+            <div class="card mb-3 bg-light-subtle shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                <div class="row g-0">
+
+                    <div class="col-auto bg-secondary text-white d-flex align-items-center justify-content-center px-3 fw-bold"
+                        style="font-size: 1.2rem; min-width: 50px;">
+                        {{ i + 1 }}
+                    </div>
+
+                    <div class="col p-3">
+                        <div class="row g-3 align-items-center">
+
+                            <div class="col-lg-5 col-md-12">
+                                <div class="mb-2">
+                                    <label class="form-label small text-secondary fw-bold mb-1">タスク名</label>
+                                    <input type="text" name="title_{{ i }}" id="title_{{ i }}" class="form-control"
+                                        style="height: 32px !important;" placeholder="1～40文字"
+                                        value="{{ rows[i].title }}">
+                                    <div class="text-end small" id="title_counter_{{ i }}" style="font-size: 0.75rem;">0 / 40</div>
+                                </div>
+                                <div>
+                                    <label class="form-label small text-secondary fw-bold mb-1">タスク内容</label>
+                                    <textarea name="content_{{ i }}" id="content_{{ i }}"
+                                        class="form-control js-auto-resize" rows="1"
+                                        style="height: 32px; min-height: 32px; resize: none; overflow-y: hidden;"
+                                        placeholder="0～2400文字">{{ rows[i].content }}</textarea>
+                                    <div class="text-end small" id="content_counter_{{ i }}" style="font-size: 0.75rem;">0 / 2400</div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-2 col-md-4 col-sm-6">
+                                <div class="mb-2">
+                                    <label class="form-label small text-secondary fw-bold mb-1">開始日</label>
+                                    <input type="date" name="start_{{ i }}" class="form-control"
+                                        style="height: 32px !important;" value="{{ rows[i].start }}">
+                                </div>
+                                <div>
+                                    <label class="form-label small text-secondary fw-bold mb-1">締切日</label>
+                                    <input type="date" name="due_{{ i }}" class="form-control"
+                                        style="height: 32px !important;" value="{{ rows[i].due }}">
+                                </div>
+                            </div>
+
+                            <div class="col-lg-5 col-md-8 col-sm-12">
+                                <div class="mb-2">
+                                    <label class="form-label small text-secondary fw-bold mb-1">グループ</label>
+                                    <select name="group_{{ i }}" class="form-select" style="height: 32px !important;">
+                                        <option value="">プライベート</option>
+                                        {% for g in groups %}
+                                        <option value="{{ g.group_id }}" {% if rows[i].group==g.group_id|string
+                                            %}selected{% endif %}>
+                                            {{ g.groupname }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label small text-secondary fw-bold mb-1">👥 メンバー</label>
+                                    <div class="p-1 rounded bg-white-50 border border-light-subtle"
+                                        id="member_box_{{ i }}"
+                                        style="min-height: 32px; background-color: rgba(255,255,255,0.5);">
+                                        <span id="members_{{ i }}" class="small fw-bold text-dark-emphasis ms-1"
+                                            style="word-break: break-all;"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="mt-4 mb-5 text-center">
+                <button type="submit" class="btn btn-primary btn-lg px-5 shadow-sm">
+                    <i class="bi bi-check-circle me-2"></i>まとめて登録する
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<script>
+    const GROUP_MEMBERS = {{ group_members | tojson }};
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        for (let i = 0; i < 10; i++) {
+            const select = document.querySelector(`select[name="group_${i}"]`);
+            const cell = document.getElementById(`members_${i}`);
+            const memberBox = document.getElementById(`member_box_${i}`);
+
+            function updateMembers() {
+                const groupId = select.value;
+                if (groupId && GROUP_MEMBERS[groupId]) {
+                    cell.textContent = GROUP_MEMBERS[groupId].join(", ");
+                } else {
+                    cell.textContent = "";
+                }
+                if (memberBox) {
+                    memberBox.style.height = 'auto';
+                    memberBox.style.height = memberBox.scrollHeight + 'px';
+                }
+            }
+            select.addEventListener("change", updateMembers);
+            updateMembers();
+        }
+
+        const textareas = document.querySelectorAll('.js-auto-resize');
+        textareas.forEach(textarea => {
+            function autoResize() {
+                textarea.style.height = '32px';
+                textarea.style.height = textarea.scrollHeight + 'px';
+            }
+            textarea.addEventListener('input', autoResize);
+            autoResize();
+        });
+
+        for (let i = 0; i < 10; i++) {
+            bindCharCounter(`title_${i}`, `title_counter_${i}`, 40);
+            bindCharCounter(`content_${i}`, `content_counter_${i}`, 2400);
+        }
+    });
+
+    function bindCharCounter(inputId, counterId, max) {
+        const input = document.getElementById(inputId);
+        const counter = document.getElementById(counterId);
+        if (!input || !counter) return;
+        input.setAttribute("maxlength", max);
+        const update = () => {
+            const len = input.value.length;
+            counter.textContent = `${len} / ${max}`;
+            if (len >= max) {
+                counter.style.color = "red";
+            } else if (len >= max * 0.8) {
+                counter.style.color = "orange";
+            } else {
+                counter.style.color = "#888";
+            }
+        };
+        input.addEventListener("input", update);
+        update();
+    }
+</script>
+
+{% else %}
+<!-- id=1でなければ表示しない。 -->
+{% endif %}
+
+{% endblock %}

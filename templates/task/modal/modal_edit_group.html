@@ -1,0 +1,31 @@
+<div class="modal-header">
+  <h5 class="modal-title">メンバー編集</h5>
+</div>
+
+<div class="modal-body">
+
+  <div class="mb-2">
+    <strong>グループ名：</strong>
+    <span id="editGroupNameLabel" class="group-name"></span>
+  </div>
+
+  <label id="memberSelectLabel" class="form-label">メンバー選択：</label>
+  <select id="editMembers" multiple style="width:100%"></select>
+
+</div>
+
+<div class="modal-footer">
+
+  <!-- エラー表示 -->
+  <div id="editGroupError" class="text-danger small mt-1"></div>
+  
+  <button type="button"
+          class="btn btn-outline-secondary"
+          data-bs-dismiss="modal">
+    戻る
+  </button>
+  
+  <button type="button" id="saveGroupMembers" class="btn btn-primary">
+    メンバー更新
+  </button>
+</div>

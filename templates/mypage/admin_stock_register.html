@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if current_user.user_id == 1 %}
+
+<div class="container d-flex justify-content-center align-items-start" style="min-height: 80vh; padding-top: 40px;">
+
+    <div style="width: 100%; max-width: 900px;">
+
+        <div class="d-flex flex-wrap align-items-center px-3 gap-3 mb-3">
+            <h4 class="mb-0 text-truncate flex-grow-1">在庫表 登録</h4>
+            <div class="d-flex gap-2 flex-shrink-0">
+                <a href="{{ url_for('mypage.index') }}" class="btn btn-outline-secondary btn-sm text-nowrap">
+                    管理者メニューへ戻る
+                </a>
+                <a href="{{ url_for('stock.index') }}" class="btn btn-outline-dark btn-sm text-nowrap">
+                    在庫管理へ
+                </a>
+            </div>
+        </div>
+
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-info">
+            {{ message }}
+        </div>
+        {% endfor %}
+
+        <form method="POST" action="{{ url_for('mypage.admin_stock_register') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            {% for i in range(10) %}
+            <div class="card mb-3 bg-light-subtle shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                <div class="row g-0">
+
+                    <div class="col-auto bg-secondary text-white d-flex align-items-center justify-content-center px-3 fw-bold"
+                        style="font-size: 1.2rem; min-width: 50px;">
+                        {{ i + 1 }}
+                    </div>
+
+                    <div class="col p-3">
+                        <div class="row g-2">
+                            <div class="col-sm-6 col-md-4 col-lg-3">
+                                <label class="form-label small text-secondary fw-bold mb-1">商品コード</label>
+                                <input type="text" name="product_code_{{ i }}" id="product_code_{{ i }}"
+                                    class="form-control" style="height: 32px !important; text-transform: uppercase;"
+                                    placeholder="英数字のみ" value="{{ rows[i].product_code }}">
+                                <div class="text-end small" id="code_counter_{{ i }}" style="font-size: 0.75rem;">0 / 50</div>
+                            </div>
+                            <div class="col-sm-6 col-md-4 col-lg-3">
+                                <label class="form-label small text-secondary fw-bold mb-1">商品名</label>
+                                <input type="text" name="product_{{ i }}" id="product_{{ i }}" class="form-control"
+                                    style="height: 32px !important;" placeholder="商品名" value="{{ rows[i].product }}">
+                                <div class="text-end small" id="product_counter_{{ i }}" style="font-size: 0.75rem;">0 / 50</div>
+                            </div>
+                            <div class="col-sm-6 col-md-4 col-lg-2">
+                                <label class="form-label small text-secondary fw-bold mb-1">カテゴリ</label>
+                                <select name="product_category_{{ i }}" class="form-select"
+                                    style="height: 32px !important;">
+                                    <option value="">選択</option>
+                                    {% for c in PRODUCT_CATEGORIES %}
+                                    <option value="{{ c }}" {% if rows[i].product_category==c %}selected{% endif %}>{{ c
+                                        }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-sm-6 col-md-4 col-lg-2">
+                                <label class="form-label small text-secondary fw-bold mb-1">下限在庫</label>
+                                <input type="number" name="min_stock_{{ i }}" class="form-control"
+                                    style="height: 32px !important;" min="{{ STOCK_QUANTITY_MIN }}"
+                                    max="{{ STOCK_QUANTITY_MAX }}" value="{{ rows[i].min_stock }}">
+                            </div>
+                            <div class="col-sm-6 col-md-4 col-lg-2">
+                                <label class="form-label small text-secondary fw-bold mb-1">日付</label>
+                                <input type="date" name="inout_date_{{ i }}" class="form-control"
+                                    style="height: 32px !important;" value="{{ rows[i].inout_date }}">
+                            </div>
+                            <div class="col-sm-6 col-md-4 col-lg-2">
+                                <label class="form-label small text-secondary fw-bold mb-1">種別</label>
+                                <div class="px-2 border rounded text-secondary bg-white text-center fw-bold"
+                                    style="height: 32px; line-height: 30px; font-size: 0.85rem;">
+                                    {{ PRODUCT_INOUT[0] }}
+                                </div>
+                                <input type="hidden" name="stock_type_{{ i }}" value="{{ PRODUCT_INOUT[0] }}">
+                            </div>
+                            <div class="col-sm-6 col-md-4 col-lg-2">
+                                <label class="form-label small text-secondary fw-bold mb-1">数量</label>
+                                <input type="number" name="stock_quantity_{{ i }}" class="form-control"
+                                    style="height: 32px !important;" min="{{ STOCK_QUANTITY_MIN }}"
+                                    max="{{ STOCK_QUANTITY_MAX }}" value="{{ rows[i].stock_quantity }}">
+                            </div>
+                            <div class="col-sm-12 col-md-8 col-lg-8">
+                                <label class="form-label small text-secondary fw-bold mb-1">備考</label>
+                                <input type="text" name="note_{{ i }}" id="note_{{ i }}" class="form-control"
+                                    style="height: 32px !important;" placeholder="備考" value="{{ rows[i].note }}">
+                                <div class="text-end small" id="note_counter_{{ i }}" style="font-size: 0.75rem;">0 / 255</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="mt-4 mb-5 text-center">
+                <button type="submit" class="btn btn-primary btn-lg px-5 shadow-sm">
+                    <i class="bi bi-check-circle me-2"></i>まとめて登録する
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% else %}
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const MAX = Number({{ STOCK_QUANTITY_MAX | tojson }});
+    const MIN = Number({{ STOCK_QUANTITY_MIN | tojson }});
+
+    document.querySelectorAll('input[name^="min_stock_"], input[name^="stock_quantity_"]').forEach((input) => {
+        input.addEventListener("input", () => {
+            let value = Number(input.value);
+            if (isNaN(value)) return;
+            if (value > MAX) input.value = MAX;
+            if (value < MIN) input.value = MIN;
+        });
+    });
+
+    document.querySelectorAll('[name^="product_code_"]').forEach(input => {
+        input.addEventListener("input", () => {
+            input.value = input.value.replace(/[^a-zA-Z0-9]/g, '');
+        });
+    });
+
+    for (let i = 0; i < 10; i++) {
+        bindCharCounter(`product_code_${i}`, `code_counter_${i}`, 50);
+        bindCharCounter(`product_${i}`, `product_counter_${i}`, 50);
+        bindCharCounter(`note_${i}`, `note_counter_${i}`, 255);
+    }
+    });
+
+    function bindCharCounter(inputId, counterId, max) {
+        const input = document.getElementById(inputId);
+        const counter = document.getElementById(counterId);
+        if (!input || !counter) return;
+        input.setAttribute("maxlength", max);
+        const update = () => {
+            const len = input.value.length;
+            counter.textContent = `${len} / ${max}`;
+            if (len >= max) {
+                counter.style.color = "red";
+            } else if (len >= max * 0.8) {
+                counter.style.color = "orange";
+            } else {
+                counter.style.color = "#888";
+            }
+        };
+        input.addEventListener("input", update);
+        update();
+    }
+</script>
+{% endblock %}

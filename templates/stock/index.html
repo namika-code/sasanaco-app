@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container text-center">
+
+    <!-- タイトル -->
+    <h1 class="my-4 fw-bold">在庫表 一覧</h1>
+
+    <!-- 新規作成ボタン -->
+    <div class="mb-4">
+        <a href="{{ url_for('stock.create') }}" class="btn btn-primary">
+            ＋ 新規作成
+        </a>
+    </div>
+
+    <hr class="mb-4">
+
+</div>
+
+<!-- フラッシュメッセージ -->
+{% for message in get_flashed_messages() %}
+    <div class="alert alert-info shadow-sm border-0">
+        {{ message }}
+    </div>
+{% endfor %}
+
+<!-- カテゴリ一覧 -->
+<div class="row g-3">
+    {% for category in categories %}
+
+    <div class="col-md-3 col-6">
+        <!-- カテゴリカード -->
+        <div class="card category-card h-100">
+            <div class="card-body">
+
+                <!-- カテゴリタイトル -->
+                <div class="category-title">
+                    {{ category }}
+                </div>
+
+                <!-- 商品一覧 -->
+                {% set items = grouped.get(category, []) %}
+
+                {% if items %}
+                    <div class="d-flex flex-column gap-2 mt-2">
+
+                        {% for item in items %}
+                        <!-- 商品カード -->
+                        <a href="{{ url_for('stock.detail', product_id=item.product.product_id) }}"
+                           class="stock-item text-decoration-none">
+
+                            <!-- 商品名 -->
+                            <div class="stock-name">
+                                {{ item.product.product }}
+                            </div>
+
+                            <!-- 在庫数 -->
+                            <small class="{% if item.stock <= item.product.min_stock %}text-danger fw-bold{% else %}text-muted{% endif %}">
+                                在庫：
+                                <strong>{{ item.stock }}</strong>
+
+                                {% if item.stock <= item.product.min_stock %}
+                                    ⚠ 
+                                {% endif %}
+                            </small>
+                        </a>
+                        {% endfor %}
+
+                    </div>
+                {% else %}
+                    <!-- データなし -->
+                    <div class="text-muted small mt-2">
+                        データなし
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+    {% endfor %}
+</div>
+
+{% endblock %}

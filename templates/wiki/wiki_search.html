@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container py-5" style="max-width: 700px;">
+    <div class="search-card shadow-sm">
+        <div class="text-center mb-4">
+            <div class="wiki-icon mb-2">
+                📚
+            </div>
+
+            <h1 class="fw-bold">
+                Wikipedia検索
+            </h1>
+            <p class="text-muted">
+                気になる言葉を調べてみよう
+            </p>
+        </div>
+
+        <form method="POST"
+              action="{{ url_for('wiki.search') }}"
+              novalidate>
+
+            {{ form.hidden_tag() }}
+
+            <div class="mb-4">
+
+                {{ form.keyword.label(class='form-label fw-bold') }}
+
+                {{ form.keyword(
+                    class='form-control form-control-lg search-input',
+                    placeholder='例: 宇宙、猫、ピラミッド'
+                ) }}
+            </div>
+
+            <div class="text-center">
+
+                {{ form.submit(
+                    class='btn search-btn px-5 py-2'
+                ) }}
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<style>
+body{
+    background:
+        linear-gradient(135deg,#f8fbff,#eef5ff);
+}
+
+/* カード */
+.search-card{
+    background: white;
+    border-radius: 24px;
+    padding: 50px 40px;
+}
+
+/* アイコン */
+.wiki-icon{
+    font-size: 60px;
+    animation: floatBook 3s ease-in-out infinite;
+}
+
+@keyframes floatBook{
+    0%{ transform: translateY(0px); }
+    50%{ transform: translateY(-6px); }
+    100%{ transform: translateY(0px); }
+}
+
+/* 入力欄 */
+.search-input{
+    border-radius: 14px;
+    border: 2px solid #dbeafe;
+    transition: 0.2s;
+}
+.search-input:focus{
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 0.2rem rgba(96,165,250,0.2);
+}
+
+/* ボタン */
+.search-btn{
+    border-radius: 999px;
+    background: linear-gradient(135deg,#60a5fa,#3b82f6);
+    color: white;
+    border: none;
+    font-weight: bold;
+    transition: 0.2s;
+}
+.search-btn:hover{
+    transform: translateY(-2px);
+    opacity: 0.95;
+}
+</style>
+
+{% endblock %}

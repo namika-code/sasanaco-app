@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="nasa-page">
+    <div class="nasa-header">
+        <h1 class="nasa-title">
+            🚀 NASA
+        </h1>
+        <div class="nasa-subtitle">
+            Astronomy Picture of the Day
+        </div>
+    </div>
+
+    <!-- ISS -->
+    <div class="iss-card">
+        <div class="section-title">
+            🛰 ISS 現在位置
+        </div>
+
+        <div class="iss-info">
+            <div class="iss-item">
+                <span class="label">
+                    緯度
+                </span>
+                <span class="value">
+                    {{ pos.latitude }}
+                </span>
+            </div>
+
+            <div class="iss-item">
+                <span class="label">
+                    経度
+                </span>
+                <span class="value">
+                    {{ pos.longitude }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    {% if data %}
+    <!-- APOD -->
+    <div class="space-card">
+        <div class="apod-header">
+            <div>
+                <h2 class="apod-title">
+                    {{ data.title }}
+                </h2>
+                <div class="apod-meta">
+                    {{ data.date }} / {{ data.media_type }}
+                </div>
+            </div>
+        </div>
+
+        <!-- image -->
+        {% if data.media_type == "image" %}
+            <img
+                src="{{ data.url }}"
+                class="space-image"
+            >
+        <!-- video -->
+        {% elif data.media_type == "video" %}
+            <div class="ratio ratio-16x9 video-box">
+                <iframe
+                    src="{{ data.url }}"
+                    frameborder="0"
+                    allowfullscreen>
+                </iframe>
+            </div>
+        {% endif %}
+
+        <!-- explanation -->
+        <div class="space-description">
+            {{ data.explanation }}
+        </div>
+    </div>
+    {% else %}
+
+    <div class="error-card">
+        無料キーの表示上限に達したため、
+        データが取得できませんでした。
+    </div>
+    {% endif %}
+
+    <!-- buttons -->
+    <div class="bottom-area">
+        <div class="button-group">
+            <a href="{{ url_for('rest.gallery', keyword='nebula') }}"
+               class="btn btn-primary px-4">
+                Gallery
+            </a>
+            <a href="{{ url_for('rest.index') }}"
+               class="btn btn-secondary px-4">
+                休憩へ
+            </a>
+        </div>
+
+        <div class="credit-text">
+            Credit: NASA
+        </div>
+    </div>
+</div>
+
+<style>
+body {
+    background:
+        linear-gradient(
+            180deg,
+            #050816,
+            #0b1026,
+            #111827
+        );
+    color: white;
+}
+
+.nasa-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding-bottom: 50px;
+}
+
+.nasa-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.nasa-title {
+    font-size: 52px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    letter-spacing: 2px;
+}
+
+.nasa-subtitle {
+    color: #9ca3af;
+    font-size: 18px;
+}
+
+.iss-card {
+    background:
+        rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    border:
+        1px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 25px;
+    margin-bottom: 35px;
+    box-shadow:
+        0 8px 30px rgba(0,0,0,0.3);
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.iss-info {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.iss-item {
+    flex: 1;
+    min-width: 200px;
+    background:
+        rgba(255,255,255,0.06);
+    border-radius: 18px;
+    padding: 18px;
+}
+
+.label {
+    display: block;
+    color: #9ca3af;
+    margin-bottom: 8px;
+}
+
+.value {
+    font-size: 28px;
+    font-weight: bold;
+    color: #60a5fa;
+}
+
+.space-card {
+    background:
+        rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    border:
+        1px solid rgba(255,255,255,0.08);
+    border-radius: 28px;
+    padding: 30px;
+    box-shadow:
+        0 10px 35px rgba(0,0,0,0.35);
+}
+
+.apod-header {
+    margin-bottom: 20px;
+}
+
+.apod-title {
+    font-size: 34px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.apod-meta {
+    color: #9ca3af;
+}
+
+.space-image {
+    width: 100%;
+    border-radius: 20px;
+    margin-bottom: 25px;
+    box-shadow:
+        0 8px 25px rgba(0,0,0,0.4);
+}
+
+.video-box {
+    overflow: hidden;
+    border-radius: 20px;
+    margin-bottom: 25px;
+}
+
+.space-description {
+    line-height: 1.9;
+    color: #e5e7eb;
+    white-space: pre-line;
+    font-size: 16px;
+}
+
+.error-card {
+    background:
+        rgba(239,68,68,0.15);
+    border:
+        1px solid rgba(239,68,68,0.3);
+    padding: 25px;
+    border-radius: 20px;
+    color: #fecaca;
+}
+
+.bottom-area {
+    margin-top: 35px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+
+.credit-text {
+    color: #9ca3af;
+    font-size: 14px;
+}
+</style>
+
+{% endblock %}

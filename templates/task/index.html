@@ -1,0 +1,309 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="d-flex justify-content-center align-items-center gap-3 my-3">
+  <h2 class="mb-0">タスク一覧</h2>
+  <!-- 上部ボタン -->
+  <div style="display: flex; gap: 10px;">
+    <a href="{{ url_for('task.create') }}" class="btn btn-primary btn-sm px-3 py-2 shadow-sm">
+      ＋ 新しいタスクを作成
+    </a>
+  </div>
+</div>
+
+<!-- フラッシュメッセージ表示 -->
+{% for message in get_flashed_messages() %}
+<div class="alert alert-info">{{ message }}</div>
+{% endfor %}
+<br>
+
+<!-- タスク一覧表示 -->
+{% if unstarted_tasks == [] and uncompleted_tasks == [] and completed_tasks == [] %}
+<!-- タスクテーブルが空 -->
+<p>タスクは登録されていません。</p>
+
+{% else %}
+<!-- タスクテーブルが空でなければ -->
+<div class="container">
+  <div class="row">
+    <!-- 未着手（左） -->
+    <div class="col-12 col-md-4">
+      <!-- shadow-sm:影小、shadow:標準の影、shadow-lg:影大 -->
+      <!-- rounded-0～3 -->
+      <!-- bg:背景色、border:枠線色、text:文字色 -->
+      <div class="card shadow-sm rounded-3 border">
+        <div class="card-header bg-secondary-subtle text-center fw-bold">
+          <font size="5">未着手</font>
+          <br>
+          <font size="3">件数 : {{ unstarted_tasks|length }}</font>
+        </div>
+        <div class="card-body">
+          {% for task in unstarted_tasks %}
+          <div class="mb-3">
+            <!-- 開始日過ぎているのに未着手：水色 -->
+            <!-- 開始日過ぎていない:黒 -->
+            <!-- 閲覧のみ:グレー -->
+            <div class="card shadow-sm rounded-3
+                  {% if task.user_id == current_user.user_id %}
+                      {% if task.start_date.date() < date.today() %}
+                        border-info border-2
+                      {% else %}
+                        border-dark
+                      {% endif %}
+                    {% else %}
+                      border-secondary text-secondary
+                    {% endif %}
+                  ">
+              <div class="card-body">
+                <!-- 文字表示 -->
+                <h5 class="card-title">{{ task.title }}</h5>
+                <p class="card-text text-end">
+                  {% if task.group_id is none %}
+                  <span style="color: purple; font-weight: bold;">プライベート</span> <br>
+                  {% else %}
+                  {{ task.group.groupname }} <br>
+                  {% endif %}
+                  {{ task.start_date.strftime('%Y-%m-%d') }} - {{ task.due_date.strftime('%Y-%m-%d') }} <br>
+                </p>
+
+                <!-- ボタン表示 -->
+                <div class="task-btn-container">
+                  <!-- 入力者はすべてのボタン -->
+                  {% if task.user_id == current_user.user_id %}
+                  <form method="post" action="{{ url_for('task.uncomplete_task', task_id=task.task_id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-primary btn-sm btn-vertical-text">
+                      <span>始める</span>
+                    </button>
+                  </form>
+                  <form method="get" action="{{ url_for('task.update', task_id=task.task_id) }}">
+                    <button type="submit" class="btn btn-outline-warning btn-sm btn-vertical-text">
+                      <span>編集</span>
+                    </button>
+                  </form>
+                  <button type="button" class="btn btn-outline-danger btn-sm btn-vertical-text" data-bs-toggle="modal"
+                    data-bs-target="#deleteModal_{{ task.task_id }}">
+                    <span>削除</span>
+                  </button>
+                  {% endif %}
+                  <!-- 閲覧のみの人は、詳細ボタンのみ -->
+                  <button type="button" class="btn btn-outline-secondary btn-sm btn-vertical-text"
+                    data-bs-toggle="modal" data-bs-target="#detailModal_{{ task.task_id }}">
+                    <span>詳細</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- モーダルでの処理 -->
+          {% include "task/modal/modal_task_detail.html" %}
+          {% include "task/modal/modal_task_delete.html" %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- 進行中（中央） -->
+    <div class="col-12 col-md-4">
+      <div class="card shadow-sm rounded-3 border">
+        <div class="card-header bg-primary-subtle text-center fw-bold">
+          <font size="5">進行中</font>
+          <br>
+          <font size="3">件数 : {{ uncompleted_tasks|length }}</font>
+        </div>
+        <div class="card-body">
+          {% for task in uncompleted_tasks %}
+          <div class="mb-3">
+            <!-- 期限切れ:赤、今日が期限:橙、あと3日:橙 -->
+            <!-- その他：青 -->
+            <!-- 閲覧のみ:グレー -->
+            <div class="card shadow-sm rounded-3
+                  {% if task.user_id == current_user.user_id %}
+                      {% if task.due_date.date() < date.today() %}
+                        border-danger  border-2
+                      {% elif task.due_date.date() == date.today() %}
+                        border-warning  border-2
+                      {% elif task.due_date.date() <= date.today() + timedelta(days=3) %}
+                        border-warning  border-2
+                      {% else %}
+                        border-primary  border-2
+                      {% endif %}
+                    {% else %}
+                      border-secondary text-secondary
+                    {% endif %}
+                  ">
+              <div class="card-body">
+                <!-- 文字表示 -->
+                <h5 class="card-title">{{ task.title }}</h5>
+                <p class="card-text text-end">
+                  {% if task.group_id is none %}
+                  <span style="color: purple; font-weight: bold;">プライベート</span> <br>
+                  {% else %}
+                  {{ task.group.groupname }} <br>
+                  {% endif %}
+                  {{ task.start_date.strftime('%Y-%m-%d') }} - {{ task.due_date.strftime('%Y-%m-%d') }} <br>
+                </p>
+
+                <!-- ボタン表示 -->
+                <div class="task-btn-container">
+                  {% if task.user_id == current_user.user_id %}
+                  <form method="post" action="{{ url_for('task.unstart_task', task_id=task.task_id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-dark btn-sm btn-vertical-text">
+                      <span>戻す</span>
+                    </button>
+                  </form>
+                  <form method="post" action="{{ url_for('task.complete_task', task_id=task.task_id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-success btn-sm btn-vertical-text">
+                      <span>完了</span>
+                    </button>
+                  </form>
+                  <form method="get" action="{{ url_for('task.update', task_id=task.task_id) }}">
+                    <button type="submit" class="btn btn-outline-warning btn-sm btn-vertical-text">
+                      <span>編集</span>
+                    </button>
+                  </form>
+                  <button type="button" class="btn btn-outline-danger btn-sm btn-vertical-text" data-bs-toggle="modal"
+                    data-bs-target="#deleteModal_{{ task.task_id }}">
+                    <span>削除</span>
+                  </button>
+                  {% endif %}
+                  <button type="button" class="btn btn-outline-secondary btn-sm btn-vertical-text"
+                    data-bs-toggle="modal" data-bs-target="#detailModal_{{ task.task_id }}">
+                    <span>詳細</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- モーダルでの処理 -->
+          {% include "task/modal/modal_task_detail.html" %}
+          {% include "task/modal/modal_task_delete.html" %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- 完了（右） -->
+    <div class="col-12 col-md-4">
+      <div class="card shadow-sm rounded-3 border">
+        <div class="card-header bg-success-subtle text-center fw-bold">
+          <font size="5">完了</font>
+          <br>
+          <font size="3">件数 : {{ completed_tasks|length }}</font>
+        </div>
+        <div class="card-body">
+          {% for task in completed_tasks %}
+          <div class="mb-3">
+            <!-- 完了になった：緑色 -->
+            <!-- 閲覧のみ:グレー -->
+            <div class="card shadow-sm rounded-3
+                  {% if task.user_id == current_user.user_id %}
+                    border-success  border-2 bg-success-subtle
+                  {% else %}
+                    border-secondary text-secondary bg-success-subtle
+                  {% endif %}
+                ">
+              <div class="card-body">
+                <!-- 文字表示 -->
+                <h5 class="card-title">{{ task.title }}</h5>
+                <p class="card-text text-end">
+                  {% if task.group_id is none %}
+                  <span style="color: purple; font-weight: bold;">プライベート</span> <br>
+                  {% else %}
+                  {{ task.group.groupname }} <br>
+                  {% endif %}
+                  {{ task.start_date.strftime('%Y-%m-%d') }} - {{ task.due_date.strftime('%Y-%m-%d') }} <br>
+                </p>
+
+                <!-- ボタン表示 -->
+                <div class="task-btn-container">
+                  {% if task.user_id == current_user.user_id %}
+                  <form method="post" action="{{ url_for('task.uncomplete_task', task_id=task.task_id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-primary btn-sm btn-vertical-text">
+                      <span>戻す</span>
+                    </button>
+                  </form>
+                  <form method="get" action="{{ url_for('task.update', task_id=task.task_id) }}">
+                    <button type="submit" class="btn btn-outline-warning btn-sm btn-vertical-text">
+                      <span>編集</span>
+                    </button>
+                  </form>
+                  <button type="button" class="btn btn-outline-danger btn-sm btn-vertical-text" data-bs-toggle="modal"
+                    data-bs-target="#deleteModal_{{ task.task_id }}">
+                    <span>削除</span>
+                  </button>
+                  {% endif %}
+                  <button type="button" class="btn btn-outline-secondary btn-sm btn-vertical-text"
+                    data-bs-toggle="modal" data-bs-target="#detailModal_{{ task.task_id }}">
+                    <span>詳細</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- モーダルでの処理 -->
+          {% include "task/modal/modal_task_detail.html" %}
+          {% include "task/modal/modal_task_delete.html" %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // 文字数カウンタとボタン無効化のJavaScriptロジック
+  function bindCharCounter(inputId, counterId, max) {
+    const input = document.getElementById(inputId);
+    const counter = document.getElementById(counterId);
+    if (!input || !counter) return;
+
+    const update = () => {
+      const len = input.value.length;
+      counter.textContent = `${len} / ${max}`;
+      if (len > max) {
+        counter.style.color = "red";
+      } else if (len > max * 0.8) {
+        counter.style.color = "orange";
+      } else {
+        counter.style.color = "#888";
+      }
+    };
+    input.removeEventListener("input", update);
+    input.addEventListener("input", update);
+    update();
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const detailModals = document.querySelectorAll('[id^="detailModal_"]');
+    detailModals.forEach(modal => {
+      const taskId = modal.id.split('_')[1];
+      const textarea = document.getElementById(`comment_${taskId}`);
+      const addBtn = document.getElementById(`addBtn_${taskId}`);
+
+      if (!textarea) return;
+
+      modal.addEventListener("shown.bs.modal", function () {
+        bindCharCounter(`comment_${taskId}`, `commentCount_${taskId}`, 200);
+
+        const checkButtonDisabled = () => {
+          if (addBtn) {
+            addBtn.disabled = textarea.value.replace(/[\s　]/g, "") === "";
+          }
+        };
+        textarea.removeEventListener("input", checkButtonDisabled);
+        textarea.addEventListener("input", checkButtonDisabled);
+        checkButtonDisabled();
+      });
+    });
+  });
+</script>
+{% endblock %}

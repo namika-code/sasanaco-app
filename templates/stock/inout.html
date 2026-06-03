@@ -1,0 +1,541 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container my-4">
+
+    <h1 class="my-4 text-center">在庫入出庫</h1>
+
+    <h3 class="text-muted text-center">
+        商品コード：{{ product.product_code }} / 商品名：{{ product.product }}
+    </h3>
+
+    <!-- フラッシュメッセージ表示 -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+
+                <div class="
+                    alert
+                    {% if category == 'error' %}
+                        alert-danger
+                    {% else %}
+                        alert-success
+                    {% endif %}
+                    alert-dismissible fade show
+                ">
+
+                    {{ message }}
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert">
+                    </button>
+
+                </div>
+
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row g-4">
+
+        <!-- ===================== -->
+        <!-- 左：在庫登録 -->
+        <!-- ===================== -->
+        <div class="col-md-6">
+
+            <div class="p-4 border rounded bg-white shadow-sm h-100">
+
+                <h3 class="text-center mb-4">在庫登録</h3>
+
+                <form method="post">
+                    {{ form.hidden_tag() }}
+
+                    <table class="
+                        table
+                        table-borderless
+                        align-middle
+                        stock-form-table
+                    ">
+                        <tr>
+                            <th style="width: 30%;">日付</th>
+                            <td>
+                                {{ form.inout_date(class="form-control") }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>種別</th>
+                            <td>
+                                {% for subfield in form.stock_type %}
+                                    <div class="form-check stock-radio">
+                                        {{ subfield(class="form-check-input") }}
+                                        {{ subfield.label(class="form-check-label") }}
+                                    </div>
+                                {% endfor %}
+                            </td>
+                        </tr>
+
+                    <tr>
+                        <th>数量</th>
+                        <td>
+                            {{ form.stock_quantity(
+                                class="form-control",
+                                id="stockQuantity"
+                            ) }}
+
+                            <div
+                                id="quantityError"
+                                class="field-error"
+                            ></div>
+                        </td>
+                    </tr>
+
+                        <tr>
+                            <th>備考</th>
+                            <td>
+                                {{ form.note(id="note", class="form-control") }}
+                            
+                                <div class="field-char-count" id="noteCount">
+                                    0 / {{ NOTE_MAX }}
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="2" class="text-center pt-3">
+                                <button type="submit" class="btn btn-primary">
+                                    登録
+                                </button>
+                            </td>
+                        </tr>
+
+                    </table>
+
+                </form>
+
+            </div>
+        </div>
+
+        <!-- ===================== -->
+        <!-- 右：在庫履歴 -->
+        <!-- ===================== -->
+        <div class="col-md-6">
+
+            <div class="p-4 border rounded bg-white shadow-sm h-100">
+
+                <h3 class="text-center mb-4">在庫履歴</h3>
+
+                <div
+                    class="table-responsive border rounded stock-history-area"
+                >
+
+                    <table class="
+                        table
+                        table-sm
+                        table-bordered
+                        align-middle
+                        mb-0
+                        stock-history-table
+                    ">
+
+                        <thead class="table-light">
+                            <tr>
+                                <th>No</th>
+                                <th>日付</th>
+                                <th>種別</th>
+                                <th>数量</th>
+                                <th>在庫数</th>
+                                <th>入力者</th>
+                                <th>備考</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for row in stock_rows %}
+                            <tr
+                                class="
+                                    {% if not loop.first and
+                                        row.date.strftime('%Y-%m-%d')
+                                        !=
+                                        stock_rows[loop.index0 - 1].date.strftime('%Y-%m-%d')
+                                    %}
+                                        date-separator
+                                    {% endif %}
+                                "
+                            >
+                                <td>{{ row.no }}</td>
+                                <td>{{ row.date.strftime('%Y-%m-%d') }}</td>
+                                <td
+                                    class="
+                                        type-cell
+                                        {% if row.type == '入庫' %}
+                                            bg-info-subtle
+                                        {% elif row.type == '出庫' %}
+                                            bg-danger-subtle
+                                        {% endif %}
+                                    "
+                                >
+                                    {{ row.type }}
+                                </td>
+                                <td
+                                    class="
+                                        quantity-cell
+
+                                        {% if row.type == '入庫' %}
+                                            bg-info-subtle
+                                        {% elif row.type == '出庫' %}
+                                            bg-danger-subtle
+                                        {% endif %}
+                                    "
+                                >
+                                    {{ row.qty }}
+                                </td>
+                                <td>{{ row.stock }}</td>
+                                <td>{{ row.user }}</td>
+
+                                <td>
+                                    {% set note = row.note or '' %}
+
+                                    {% if note|trim %}
+                                        <div class="note-box">
+                                            <div class="note-inner">
+                                                {{ note }}
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+    <div class="mt-3 mb-5 text-center">
+        <a href="{{ url_for('stock.detail', product_id=product_id) }}"
+           class="btn btn-secondary">
+            詳細へ戻る
+        </a>
+
+        <a href="{{ url_for('stock.index') }}"
+           class="btn btn-secondary">
+            一覧へ戻る
+        </a>
+    </div>
+
+</div>
+
+<style>
+/* =========================
+   在庫登録
+========================= */
+
+/* フォーム */
+.stock-form-table {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* 項目名 */
+.stock-form-table th {
+    width: 90px;
+    text-align: left;
+    vertical-align: middle;
+    font-weight: 600;
+    white-space: nowrap;
+    padding: 12px 8px;
+    font-size: 1rem;
+}
+
+/* 入力欄 */
+.stock-form-table td {
+    text-align: left;
+    padding: 12px 8px;
+    font-size: 1rem;
+}
+
+.stock-form-table .form-control {
+    width: 100%;
+    max-width: 100%;
+    font-size: 1rem;
+    padding: 0.55rem 0.75rem;
+}
+
+/* 備考 */
+#note {
+    max-width: 100%;
+    min-height: 100%;
+}
+
+/* ラジオボタン */
+.stock-radio {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.stock-radio .form-check-label {
+    margin-bottom: 0;
+    font-size: 1rem;
+}
+
+/* 登録ボタン */
+.stock-form-table .btn {
+    min-width: 140px;
+    font-size: 1rem;
+    padding: 0.55rem 1.4rem;
+}
+
+/* 文字数 */
+.field-char-count {
+    width: 100%;
+    text-align: right;
+    margin-top: 6px;
+    font-size: 0.9rem;
+    color: #888;
+}
+
+/* =========================
+   在庫履歴
+========================= */
+
+/* スクロール */
+.stock-history-area {
+    max-height: calc(100vh - 380px);
+    overflow-y: auto;
+}
+
+/* ヘッダ固定 */
+.stock-history-area thead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background-color: #f8f9fa;
+}
+
+/* テーブル全体 */
+.stock-history-table {
+    border: 1px solid #d0d0d0 !important;
+    font-size: 0.95rem;
+}
+
+/* ヘッダ */
+.stock-history-table thead th {
+    border-bottom: 2px solid #b8b8b8 !important;
+    white-space: nowrap;
+}
+
+/* 区切り */
+.type-cell {
+    border-left: 2px solid #c7c7c7 !important;
+}
+
+.quantity-cell {
+    border-right: 2px solid #c7c7c7 !important;
+}
+
+.date-separator td {
+    border-top: 2px solid #bdbdbd !important;
+}
+
+/* セル余白 */
+.stock-history-table td,
+.stock-history-table th {
+    padding: 0.45rem 0.6rem;
+}
+
+/* 備考 */
+.note-box {
+    max-width: 180px;
+}
+
+.note-inner {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    word-break: break-word;
+}
+
+/* =========================
+   エラーメッセージ
+========================= */
+
+.field-error {
+    min-height: 22px;
+    margin-top: 6px;
+    color: #dc3545;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* エラー時入力欄 */
+.input-error {
+    border: 2px solid #dc3545 !important;
+    background-color: #fff5f5;
+}
+</style>
+
+<script>
+// =========================
+// 入力制限
+// =========================
+document.addEventListener("DOMContentLoaded", () => {
+
+    const qtyInput = document.getElementById("stockQuantity");
+    const errorBox = document.getElementById("quantityError");
+    if (!qtyInput) return;
+
+    const form = qtyInput.closest("form");
+    const MAX = Number({{ STOCK_QUANTITY_MAX | tojson }});
+    const MIN = Number({{ STOCK_QUANTITY_MIN | tojson }} + 1); // 入力制限は1以上にしたいから
+    // 現在在庫
+    const CURRENT_STOCK = Number({{ current_stock | tojson }});
+
+    function showError(message) {
+        errorBox.textContent = message;
+        qtyInput.classList.add("input-error");
+    }
+
+    function validateQuantity() {
+        let value = Number(qtyInput.value);
+        errorBox.textContent = "";
+        qtyInput.classList.remove("input-error");
+
+        // 未入力
+        if (qtyInput.value === "") {
+            return false;
+        }
+
+        // 数値チェック
+        if (isNaN(value)) {
+            showError("数値を入力してください");
+            return false;
+        }
+
+        // 最小値
+        if (value < MIN) {
+            qtyInput.value = MIN;
+
+            showError(
+                `${MIN}以上を入力してください`
+            );
+            return false;
+        }
+
+        // 最大値
+        if (value > MAX) {
+            qtyInput.value = MAX;
+
+            showError(
+                `最大数量は ${MAX} です`
+            );
+            return false;
+        }
+
+        // 最新値再取得
+        value = Number(qtyInput.value);
+
+        // 種別取得
+        const checkedType =
+            document.querySelector(
+                'input[name="stock_type"]:checked'
+            );
+
+        // 出庫時在庫チェック
+        if (checkedType) {
+            const type = checkedType.value;
+
+            if (
+                type === "出庫" &&
+                value > CURRENT_STOCK
+            ) {
+
+                qtyInput.value = CURRENT_STOCK;
+                showError(
+                    `在庫数(${CURRENT_STOCK})を超えています`
+                );
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // 入力時
+    qtyInput.addEventListener(
+        "input",
+        validateQuantity
+    );
+
+    // フォーカス外れ時
+    qtyInput.addEventListener(
+        "blur",
+        validateQuantity
+    );
+
+    // 種別変更時
+    document
+        .querySelectorAll(
+            'input[name="stock_type"]'
+        )
+        .forEach(radio => {
+
+            radio.addEventListener(
+                "change",
+                validateQuantity
+            );
+        });
+
+    // submit時
+    form.addEventListener("submit", (e) => {
+
+        if (!validateQuantity()) {
+            e.preventDefault();
+        }
+    });
+
+});
+
+// =========================
+// 文字数カウンタ
+// =========================
+function bindCharCounter(inputId, counterId, max) {
+
+    const input = document.getElementById(inputId);
+    const counter = document.getElementById(counterId);
+
+    if (!input || !counter) return;
+
+    const update = () => {
+        const len = input.value.length;
+        counter.textContent = `${len} / ${max}`;
+
+        if (len > max) {
+            counter.style.color = "red";
+        } else if (len > max * 0.8) {
+            counter.style.color = "orange";
+        } else {
+            counter.style.color = "#888";
+        }
+    };
+
+    input.addEventListener("input", update);
+    update();
+}
+
+bindCharCounter("note", "noteCount", {{ NOTE_MAX }});
+</script>
+
+{% endblock %}

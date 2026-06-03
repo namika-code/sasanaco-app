@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if current_user.user_id == 1 %}
+
+<div class="container d-flex justify-content-center align-items-start" style="min-height: 80vh; padding-top: 40px;">
+
+    <div style="width: 100%; max-width: 900px;">
+
+        <div class="d-flex flex-wrap align-items-center px-3 gap-3 mb-3">
+            <h4 class="mb-0 text-truncate flex-grow-1">ユーザー 登録</h4>
+            <div class="d-flex gap-2 flex-shrink-0">
+                <a href="{{ url_for('mypage.index') }}" class="btn btn-outline-secondary btn-sm text-nowrap">
+                    管理者メニューへ戻る
+                </a>
+                <a href="{{ url_for('mypage.user_list') }}" class="btn btn-outline-dark btn-sm text-nowrap">
+                    ユーザー一覧へ
+                </a>
+            </div>
+        </div>
+
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+
+        <form method="post" action="{{ url_for('mypage.admin_register_form') }}" autocomplete="off">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            {% for i in range(10) %}
+            <div class="card mb-3 bg-light-subtle shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                <div class="row g-0">
+
+                    <div class="col-auto bg-secondary text-white d-flex align-items-center justify-content-center px-3 fw-bold"
+                        style="font-size: 1.2rem; min-width: 50px;">
+                        {{ i + 1 }}
+                    </div>
+
+                    <div class="col p-3">
+                        <div class="row g-3">
+
+                            <div class="col-lg-6">
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-secondary fw-bold mb-1">
+                                            ユーザー名 <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" name="username_{{ i }}" class="form-control"
+                                            style="height: 32px !important;" maxlength="{{ USER_NAME_MAX }}"
+                                            placeholder="{{ USER_NAME_MAX }}文字以内" value="{{ rows[i].username }}"
+                                            autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-secondary fw-bold mb-1">
+                                            パスワード <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" name="password_{{ i }}" class="form-control"
+                                            style="height: 32px !important;" maxlength="{{ USER_PASS_MAX }}"
+                                            placeholder="{{ USER_PASS_MIN }}～{{ USER_PASS_MAX }}文字"
+                                            value="{{ rows[i].password }}" autocomplete="new-password"
+                                            onfocus="this.type='password';"
+                                            onblur="if(this.value === '') this.type='text';">
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label small text-secondary fw-bold mb-1">
+                                            部署 <span class="text-danger">*</span>
+                                        </label>
+                                        <select name="department_{{ i }}" class="form-select"
+                                            style="height: 32px !important;">
+                                            {% for d in departments %}
+                                            <option value="{{ d }}" {% if rows[i].department==d %}selected{% endif %}>
+                                                {{ d }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-secondary fw-bold mb-1">
+                                            姓 <span class="text-muted fw-normal" style="font-size: 0.75rem;">(任意)</span>
+                                        </label>
+                                        <input type="text" name="last_name_{{ i }}" class="form-control"
+                                            style="height: 32px !important;" placeholder="例：山田"
+                                            value="{{ rows[i].last_name }}">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-secondary fw-bold mb-1">
+                                            名 <span class="text-muted fw-normal" style="font-size: 0.75rem;">(任意)</span>
+                                        </label>
+                                        <input type="text" name="first_name_{{ i }}" class="form-control"
+                                            style="height: 32px !important;" placeholder="例：太郎"
+                                            value="{{ rows[i].first_name }}">
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label small text-secondary fw-bold mb-1">
+                                            性別 <span class="text-muted fw-normal"
+                                                style="font-size: 0.75rem;">(任意)</span>
+                                        </label>
+                                        <select name="gender_{{ i }}" class="form-select"
+                                            style="height: 32px !important;">
+                                            <option value="" {% if not rows[i].gender %}selected{% endif %}>未設定</option>
+                                            <option value="male" {% if rows[i].gender=='male' %}selected{% endif %}>男性
+                                            </option>
+                                            <option value="female" {% if rows[i].gender=='female' %}selected{% endif %}>
+                                                女性</option>
+                                            <option value="other" {% if rows[i].gender=='other' %}selected{% endif %}>
+                                                その他</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="mt-4 mb-5 text-center">
+                <button type="submit" class="btn btn-primary btn-lg px-5 shadow-sm">
+                    <i class="bi bi-person-plus me-2"></i>まとめて登録する
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% else %}
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const inputs = document.querySelectorAll('[name^="username_"]');
+        inputs.forEach(input => {
+            input.addEventListener("input", () => {
+                input.value = input.value.replace(/[^\w\-@.]/g, '');
+            });
+        });
+    });
+</script>
+{% endblock %}

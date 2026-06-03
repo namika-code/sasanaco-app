@@ -1,0 +1,570 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container d-flex justify-content-center align-items-start" style="min-height: 80vh; padding-top: 40px;">
+
+    <!-- 在庫表フォームと同じ横幅（max-width: 480px） -->
+    <div class="card shadow-lg p-4" style="width: 100%; max-width: 480px; border-radius: 16px;">
+
+        <div class="text-center mb-4">
+            <h3 class="fw-bold m-0">
+                タスク編集
+            </h3>
+        </div>
+
+        <!-- フラッシュメッセージ -->
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+
+        {% from '_formhelpers.html' import render_field %}
+        <form method="post" action="{{ url_for('task.update', task_id=edit_id) }}" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- タスク名 -->
+            <div class="mb-3 text-start task-input-counter-box input-wrapper">
+                {{ render_field(form.title,
+                class='form-control counter-input',
+                id='taskTitle',
+                placeholder='40文字以内'
+                ) }}
+                <div class="field-char-count" id="taskTitleCount">0 / 40</div>
+            </div>
+
+            <!-- タスク内容 -->
+            <div class="mb-3 text-start task-input-counter-box input-wrapper">
+                {{ render_field(form.task_content,
+                class='form-control counter-textarea',
+                rows=3,
+                id='taskContent',
+                placeholder='2400文字以内'
+                ) }}
+                <div class="field-char-count" id="taskContentCount">0 / 2400</div>
+            </div>
+
+            <!-- 開始日 -->
+            <div class="mb-3 text-start day-select">
+                {{ render_field(form.start_date, class='form-control w-100', id='start_date') }}
+            </div>
+
+            <!-- 締切日 -->
+            <div class="mb-3 text-start day-select">
+                {{ render_field(form.due_date, class='form-control w-100', id='due_date') }}
+            </div>
+
+            <hr>
+
+            <!-- グループ -->
+            <div class="mb-3 text-start">
+                <div class="task-group-row-container">
+                    <div class="task-group-select-box">
+                        {{ render_field(form.group_id, class='form-control') }}
+                    </div>
+                    <button type="button" id="groupActionBtn" class="btn btn-outline-secondary btn-sm">
+                    </button>
+                </div>
+            </div>
+
+            <!-- グループメンバー表示 -->
+            <div id="groupMembersContainer" class="mb-3 text-start">
+                <div id="groupMembersSizer" class="is-hidden">
+                    <div class="groupMembersInner bg-light p-3 rounded-3 text-muted small">
+                        <strong id="groupMembersLabel" class="d-block mb-2 text-dark">
+                            グループメンバー：
+                        </strong>
+                        <div id="groupMembers"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ステータス -->
+            <div class="mb-3 text-start radio-inline">
+                {{ render_field(form.task_status, class='form-control') }}
+            </div>
+
+            <!-- エラーテキスト表示 -->
+            <div id="formError" class="text-danger small mb-2 text-start fw-bold"></div>
+
+            <!-- 更新ボタン -->
+            <div class="d-grid mt-4">
+                <button type="submit" id="submitBtn" class="btn btn-primary btn-lg">
+                    更新する
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<!-- 一覧へ戻るボタン -->
+<div class="text-center mt-3 mb-5">
+    <a href="{{ url_for('task.index') }}" class="btn btn-secondary">
+        一覧へ戻る
+    </a>
+</div>
+
+<!-- グループモーダル表示 -->
+<div class="modal fade" id="createGroupModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            {% include 'task/modal/modal_create_group.html' %}
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editGroupModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            {% include 'task/modal/modal_edit_group.html' %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+<!-- group_view.js -->
+<script>
+    function genderClass(gender) {
+        switch (gender) {
+            case "male": return "text-primary";
+            case "female": return "text-danger";
+            default: return "text-secondary";
+        }
+    }
+
+    async function loadMembers(groupId, isPrivate) {
+        const container = document.getElementById("groupMembersContainer");
+        const sizer = document.getElementById("groupMembersSizer");
+        const box = document.getElementById("groupMembers");
+
+        if (!container || !sizer || !box) return;
+
+        window.AppState.currentGroupId = groupId;
+        const requestId = groupId;
+
+        if (isPrivate) {
+            sizer.classList.add("is-fading");
+            await new Promise(r => setTimeout(r, 180));
+            sizer.classList.add("is-hidden");
+            box.innerHTML = "";
+            return;
+        }
+
+        sizer.classList.remove("is-hidden");
+        sizer.classList.add("is-fading");
+        await new Promise(r => setTimeout(r, 180));
+
+        const getGroupUrl = window.FlaskConfig.urls.api_get_group.replace('9999', groupId);
+        const group = await apiFetch(getGroupUrl);
+
+        if (window.AppState.currentGroupId !== requestId) return;
+
+        const members = group.members ?? [];
+
+        box.innerHTML = members
+            .map(m => {
+                const cls = genderClass(m.gender);
+                return `
+          <div class="mb-1 d-flex align-items-center">
+            <i class="bi bi-person-fill ${cls} me-2"></i>
+            <span>${m.name}（${m.department}）</span>
+          </div>
+        `;
+            })
+            .join("");
+
+        requestAnimationFrame(() => {
+            sizer.classList.remove("is-fading");
+        });
+    }
+
+    function updateGroupButton(groupId, isPrivate) {
+        const btn = document.getElementById("groupActionBtn");
+        if (!btn) return;
+
+        if (isPrivate) {
+            btn.innerText = "グループ作成";
+            btn.onclick = () => showModal("createGroupModal");
+        } else {
+            btn.innerText = "メンバー編集";
+            btn.onclick = () => openEditModal(groupId);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const select = document.querySelector('[name="group_id"]');
+        if (!select) return;
+
+        function handler() {
+            const value = select.value;
+            const isPrivate = !value || value == -1;
+
+            loadMembers(value, isPrivate);
+            updateGroupButton(value, isPrivate);
+        }
+
+        select.addEventListener("change", handler);
+        $(select).on("select2:select", handler);
+        $(select).on("select2:clear", handler);
+
+        requestAnimationFrame(handler);
+    });
+</script>
+
+<!-- group_create.js -->
+<script>
+    $(function () {
+        const $members = $("#createMembers");
+        const $groupName = $("#createGroupName");
+
+        bindGroupNameCounter();
+
+        const input = document.getElementById("createGroupName");
+        if (input) {
+            input.addEventListener("input", validateGroupForm);
+            validateGroupForm();
+        }
+
+        $(document).on("input change", "#createGroupName, #createMembers", function () {
+            if (window.AppState.initializingCreate) return;
+            window.AppState.createDirty = true;
+        });
+
+        function validateGroupForm() {
+            const input = document.getElementById("createGroupName");
+            const errorBox = document.getElementById("groupNameError");
+            const btn = document.getElementById("createGroupBtn");
+
+            if (!input || !btn) return;
+
+            const errors = [];
+            const value = input.value.trim();
+
+            if (!value) errors.push("グループ名を入力してください");
+            if (value.length > 20) errors.push("グループ名は20文字以内にしてください");
+
+            if (errorBox) {
+                errorBox.textContent = errors.join(" / ");
+            }
+
+            input.classList.toggle("is-invalid-input", errors.length > 0);
+
+            btn.disabled = errors.length > 0;
+            btn.classList.toggle("btn-danger", errors.length > 0);
+            btn.classList.toggle("btn-primary", errors.length === 0);
+        }
+
+        $("#createGroupModal").on("shown.bs.modal", function () {
+            validateGroupForm();
+            window.AppState.initializingCreate = true;
+            setupCreateGroupModal().finally(() => {
+                window.AppState.initializingCreate = false;
+            });
+        });
+
+        $("#createGroupBtn").on("click", function (e) {
+            e.preventDefault();
+            const groupname = $groupName.val().trim();
+            const members = $members.val() || [];
+
+            window.AppState.initializingCreate = true;
+
+            apiFetch(window.FlaskConfig.urls.api_create_group, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": window.FlaskConfig.csrfToken
+                },
+                body: JSON.stringify({ groupname, members })
+            })
+                .then(data => {
+                    const select = document.querySelector('[name="group_id"]');
+                    select.add(new Option(data.groupname, data.group_id));
+                    select.value = data.group_id;
+                    select.dispatchEvent(new Event("change"));
+
+                    $groupName.val("");
+                    $members.val(null).trigger("change");
+
+                    window.AppState.createDirty = false;
+                    hideModal("createGroupModal");
+                })
+                .catch(err => {
+                    console.error(err);
+                    const errorBox = document.getElementById("groupNameError");
+                    const input = document.getElementById("createGroupName");
+                    if (errorBox) errorBox.textContent = err.message;
+                    if (input) input.classList.add("is-invalid-input");
+                })
+                .finally(() => {
+                    window.AppState.initializingCreate = false;
+                });
+        });
+
+        $("#createGroupModal").on("hidden.bs.modal", function () {
+            resetCreateGroupModal();
+        });
+    });
+
+    async function fetchUsers() {
+        const res = await fetch(window.FlaskConfig.urls.api_users);
+        if (!res.ok) throw new Error("ユーザー取得に失敗しました");
+        return await res.json();
+    }
+
+    async function setupCreateGroupModal() {
+        const $members = $("#createMembers");
+        const users = await fetchUsers();
+        initMemberSelect($members, users, [], "#createGroupModal");
+    }
+
+    function bindGroupNameCounter() {
+        const input = document.getElementById("createGroupName");
+        const counter = document.getElementById("groupNameCount");
+        if (!input || !counter) return;
+
+        const max = 20;
+        const update = () => {
+            const len = input.value.length;
+            counter.textContent = `${len} / ${max}`;
+            counter.style.color = len > max ? "red" : len > max * 0.8 ? "orange" : "#888";
+        };
+        input.addEventListener("input", update);
+        update();
+    }
+
+    function resetCreateGroupModal() {
+        $("#createGroupName").val("");
+        $("#createMembers").val(null).trigger("change");
+
+        const errorBox = document.getElementById("groupNameError");
+        const input = document.getElementById("createGroupName");
+        const counter = document.getElementById("groupNameCount");
+
+        if (errorBox) errorBox.textContent = "";
+        if (input) input.classList.remove("is-invalid-input");
+        if (counter) {
+            counter.textContent = "0 / 20";
+            counter.style.color = "#888";
+        }
+        window.AppState.createDirty = false;
+    }
+</script>
+
+<!-- group_edit.js -->
+<script>
+    $(document).on("change", "#editMembers", function () {
+        if (window.AppState.initializingEdit) return;
+        window.AppState.editDirty = true;
+        validateEditGroupForm();
+    });
+
+    function openEditModal(groupId) {
+        window.AppState.editingGroupId = groupId;
+        window.AppState.editDirty = false;
+        window.AppState.initializingEdit = true;
+
+        setupEditGroupModal(groupId)
+            .then(() => { showModal("editGroupModal"); })
+            .finally(() => {
+                setTimeout(() => { window.AppState.initializingEdit = false; }, 200);
+            });
+    }
+
+    async function setupEditGroupModal(groupId) {
+        const $editMembers = $("#editMembers");
+        const getGroupUrl = window.FlaskConfig.urls.api_get_group.replace('9999', groupId);
+
+        const [users, group] = await Promise.all([
+            fetchUsers(),
+            apiFetch(getGroupUrl)
+        ]);
+
+        const memberIds = (group.members ?? []).map(m => m.id);
+        document.getElementById("editGroupNameLabel").innerText = group.groupname ?? "（名称未設定）";
+
+        initMemberSelect($editMembers, users, memberIds, "#editGroupModal");
+        validateEditGroupForm();
+    }
+
+    function validateEditGroupForm() {
+        const members = $("#editMembers").val() || [];
+        const btn = document.getElementById("saveGroupMembers");
+        const errorBox = document.getElementById("editGroupError");
+        const errors = [];
+
+        if (members.length === 0) {
+            errors.push("メンバーを1人以上選択してください");
+        }
+
+        if (errorBox) {
+            errorBox.textContent = errors.join(" / ");
+        }
+
+        const hasError = errors.length > 0;
+        btn.disabled = hasError;
+        btn.classList.toggle("btn-danger", hasError);
+        btn.classList.toggle("btn-primary", !hasError);
+
+        return !hasError;
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("saveGroupMembers")?.addEventListener("click", async () => {
+            if (!validateEditGroupForm()) return;
+
+            const id = window.AppState.editingGroupId;
+            const selected = ($("#editMembers").val() || []).map(Number);
+            const syncMembersUrl = window.FlaskConfig.urls.api_sync_members.replace('9999', id);
+
+            try {
+                await apiFetch(syncMembersUrl, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": window.FlaskConfig.csrfToken
+                    },
+                    body: JSON.stringify({ members: selected })
+                });
+
+                window.AppState.editDirty = false;
+                loadMembers(id, false);
+                hideModal("editGroupModal");
+            } catch (err) {
+                console.error(err);
+                document.getElementById("editGroupError").textContent = err.message;
+            }
+        });
+    });
+</script>
+
+<!-- task.js -->
+<script>
+    function bindCharCounter(inputId, counterId, max) {
+        const input = document.getElementById(inputId);
+        const counter = document.getElementById(counterId);
+        if (!input || !counter) return;
+
+        const update = () => {
+            const len = input.value.length;
+            counter.textContent = `${len} / ${max}`;
+
+            if (len > max) {
+                counter.style.color = "red";
+            } else if (len > max * 0.8) {
+                counter.style.color = "orange";
+            } else {
+                counter.style.color = "#888";
+            }
+            validateTaskForm();
+        };
+
+        input.addEventListener("input", update);
+        update();
+    }
+
+    function validateTaskForm() {
+        const title = document.getElementById("taskTitle");
+        const content = document.getElementById("taskContent");
+        const startDateEl = document.getElementById("start_date") || document.querySelector('[name="start_date"]');
+        const dueDateEl = document.getElementById("due_date") || document.querySelector('[name="due_date"]');
+        const submitBtn = document.getElementById("submitBtn");
+        const errorBox = document.getElementById("formError");
+
+        if (!title || !content || !submitBtn) return;
+
+        const errors = [];
+
+        if (!title.value.trim()) {
+            errors.push("タスク名を入力してください");
+            title.classList.add("is-invalid");
+        } else if (title.value.length > 40) {
+            errors.push("タスク名は40文字以内にしてください");
+            title.classList.add("is-invalid");
+        } else {
+            title.classList.remove("is-invalid");
+        }
+
+        if (content.value.length > 2400) {
+            errors.push("タスク内容は2400文字以内にしてください");
+            content.classList.add("is-invalid");
+        } else {
+            content.classList.remove("is-invalid");
+        }
+
+        if (!startDateEl.value) {
+            errors.push("開始日を入力してください");
+            startDateEl.classList.add("is-invalid");
+        } else {
+            startDateEl.classList.remove("is-invalid");
+        }
+
+        if (!dueDateEl.value) {
+            errors.push("締切日を入力してください");
+            dueDateEl.classList.add("is-invalid");
+        } else {
+            dueDateEl.classList.remove("is-invalid");
+        }
+
+        if (startDateEl && dueDateEl && startDateEl.value && dueDateEl.value) {
+            const start = new Date(startDateEl.value);
+            const due = new Date(dueDateEl.value);
+
+            if (start > due) {
+                errors.push("締切日は開始日より後にしてください");
+                startDateEl.classList.add("is-invalid");
+                dueDateEl.classList.add("is-invalid");
+            }
+        }
+
+        if (errorBox) {
+            errorBox.textContent = errors.join(" / ");
+        }
+
+        // --- submit非活性時にボタン赤表示 ---
+        const hasError = errors.length > 0;
+        submitBtn.disabled = hasError;
+
+        if (hasError) {
+            // エラーがある場合はボタンを赤にする
+            submitBtn.classList.remove("btn-primary");
+            submitBtn.classList.add("btn-danger");
+        } else {
+            // エラーがない場合は、赤を消して元の青に戻す
+            submitBtn.classList.remove("btn-danger");
+            submitBtn.classList.add("btn-primary");
+        }
+        // ---------------------------------------------------
+    }
+</script>
+
+<!-- task_init.js -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        bindCharCounter("taskTitle", "taskTitleCount", 40);
+        bindCharCounter("taskContent", "taskContentCount", 2400);
+
+        validateTaskForm();
+
+        document.getElementById("taskTitle")?.addEventListener("input", validateTaskForm);
+        document.getElementById("taskContent")?.addEventListener("input", validateTaskForm);
+        document.querySelector('[name="start_date"]')?.addEventListener("change", validateTaskForm);
+        document.querySelector('[name="due_date"]')?.addEventListener("change", validateTaskForm);
+
+        const select = document.querySelector('[name="group_id"]');
+        function handler() {
+            const value = select.value;
+            const isPrivate = !value || value == -1;
+
+            loadMembers(value, isPrivate);
+            updateGroupButton(value, isPrivate);
+        }
+
+        select?.addEventListener("change", handler);
+        handler();
+    });
+</script>
+{% endblock %}

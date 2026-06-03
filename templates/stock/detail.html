@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="d-flex justify-content-center align-items-center gap-3 my-4">
+
+    <h1 class="mb-0">在庫表</h1>
+
+    {% if current_user.user_id == 1 %}
+        <form method="POST"
+            action="{{ url_for('stock.delete', product_id=product.product_id) }}"
+            onsubmit="return confirm('本当に削除しますか？');"
+            class="m-0">
+
+            <input type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}">
+
+            <button type="submit" class="btn btn-danger px-3">
+                － 削除
+            </button>
+
+        </form>
+    {% endif %}
+
+</div>
+<hr>
+<div class="container text-center">
+    <div class="d-flex justify-content-center">
+
+        <div class="p-4 border rounded bg-white shadow-sm" style="width: 100%; max-width: 900px;">
+            <h4 class="product-header">
+                商品コード：{{ product.product_code }}<br>
+                商品名：{{ product.product }}
+            </h4>
+            <p>
+                カテゴリ: {{ product.product_category }}
+                {% if current_user.department == '総務' %}
+                    / 下限数: {{ product.min_stock }}
+                {% endif %}
+            </p>
+            
+            <div class="table-responsive border rounded stock-history-area">
+
+                <table class="
+                    table
+                    table-sm
+                    table-bordered
+                    align-middle
+                    mb-0
+                    stock-history-table
+                ">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>No</th>
+                            <th>日付</th>
+                            <th>種別</th>
+                            <th>数量</th>
+                            <th>在庫数</th>
+                            <th>入力者</th>
+                            <th>備考</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for row in stock_rows %}
+                        <tr
+                            class="
+                                {% if not loop.first and
+                                    row.date.strftime('%Y-%m-%d')
+                                    !=
+                                    stock_rows[loop.index0 - 1].date.strftime('%Y-%m-%d')
+                                %}
+                                    date-separator
+                                {% endif %}
+                            "
+                        >
+
+                            <td>{{ row.no }}</td>
+
+                            <td>
+                                {{ row.date.strftime('%Y-%m-%d') }}
+                            </td>
+
+                            <td
+                                class="
+                                    type-cell
+
+                                    {% if row.type == '入庫' %}
+                                        bg-info-subtle
+                                    {% elif row.type == '出庫' %}
+                                        bg-danger-subtle
+                                    {% endif %}
+                                "
+                            >
+                                {{ row.type }}
+                            </td>
+
+                            <td
+                                class="
+                                    quantity-cell
+
+                                    {% if row.type == '入庫' %}
+                                        bg-info-subtle
+                                    {% elif row.type == '出庫' %}
+                                        bg-danger-subtle
+                                    {% endif %}
+                                "
+                            >
+                                {{ row.qty }}
+                            </td>
+
+                            <td>{{ row.stock }}</td>
+
+                            <td>{{ row.user }}</td>
+
+                            <td>
+
+                                {% set note = row.note or '' %}
+
+                                {% if note|trim %}
+                                    <div class="note-box">
+                                        <div class="note-inner">
+                                            {{ note }}
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <!-- ボタン -->
+            <div class="d-flex justify-content-center gap-2 flex-wrap mt-4">
+
+                <a href="{{ url_for('stock.inout', product_id=product.product_id) }}"
+                class="btn btn-primary">
+                    入出庫
+                </a>
+
+                <a href="{{ url_for('stock.graph', product_id=product.product_id) }}"
+                class="btn btn-success">
+                    グラフ
+                </a>
+
+                <button class="btn btn-success" onclick="downloadExcel()">
+                    Excel出力
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <br>
+
+    <div class="text-center mt-3 mb-5">
+        <a href="{{ url_for('stock.index') }}" class="btn btn-secondary">
+            一覧へ戻る
+        </a>
+    </div>
+
+</div>
+
+<style>
+/* =========================
+   カード
+========================= */
+
+.detail-card {
+    width: 100%;
+    max-width: 1100px;
+}
+
+/* =========================
+   商品情報
+========================= */
+
+.product-header {
+    line-height: 1.7;
+    font-weight: 600;
+}
+
+/* =========================
+   在庫履歴
+========================= */
+
+/* スクロール */
+.stock-history-area {
+    height: 400px;
+
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+/* テーブル全体 */
+.stock-history-table {
+    border: 1px solid #d0d0d0 !important;
+    font-size: 0.95rem;
+}
+
+/* ヘッダ固定 */
+.stock-history-area thead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background-color: #f8f9fa;
+}
+
+/* ヘッダ */
+.stock-history-table thead th {
+    border-bottom: 2px solid #b8b8b8 !important;
+    white-space: nowrap;
+}
+
+/* セル余白 */
+.stock-history-table td,
+.stock-history-table th {
+    padding: 0.5rem 0.65rem;
+    vertical-align: middle;
+}
+
+/* 縦横線 */
+.type-cell {
+    border-left: 2px solid #c7c7c7 !important;
+}
+
+.quantity-cell {
+    border-right: 2px solid #c7c7c7 !important;
+}
+
+.date-separator td {
+    border-top: 2px solid #bdbdbd !important;
+}
+
+/* 備考 */
+.note-box {
+    max-width: 220px;
+}
+
+.note-inner {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    word-break: break-word;
+}
+
+/* テーブル行ホバー */
+.stock-history-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* スマホ用 */
+@media (max-width: 768px) {
+
+    .stock-history-table {
+        font-size: 0.82rem;
+    }
+
+    .stock-history-table td,
+    .stock-history-table th {
+        padding: 0.4rem;
+    }
+
+    .note-box {
+        max-width: 120px;
+    }
+
+}
+</style>
+
+<script>
+function downloadExcel() {
+
+    const name = prompt("ファイル名を入力（空の場合、自動）");
+
+    // キャンセル時
+    if (name === null) {
+        return;
+    }
+
+    let url = "{{ url_for('stock.export_excel', product_id=product.product_id) }}";
+
+    // 空文字じゃない時だけファイル名付与
+    if (name.trim() !== "") {
+        url += "?filename=" + encodeURIComponent(name.trim());
+    }
+
+    window.location.href = url;
+}
+</script>
+
+{% endblock %}

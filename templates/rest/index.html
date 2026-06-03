@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container py-4" style="max-width: 700px;">
+
+    <h2 class="fw-bold mb-4 text-center title">
+        <span class="steam">☕</span>
+        休憩メニュー
+    </h2>
+
+    <div class="row g-3">
+
+        <!-- 天気 -->
+        <div class="col-6">
+            <a href="{{ url_for('rest.weather') }}"
+               class="menu-card card shadow-sm border-0 text-decoration-none p-3 weather-card">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="icon fs-1 cloud">
+                        🌤
+                    </div>
+
+                    <div>
+                        <div class="fw-bold">天気</div>
+                        <small class="text-muted">
+                            現在の天気情報を見る
+                        </small>
+                    </div>
+
+                </div>
+
+            </a>
+        </div>
+
+        <!-- NASA -->
+        <div class="col-6">
+            <a href="{{ url_for('rest.nasa') }}"
+               class="menu-card card shadow-sm border-0 text-decoration-none p-3 nasa-card">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="icon fs-1 rocket">
+                        🚀
+                    </div>
+
+                    <div>
+                        <div class="fw-bold text-white">NASA</div>
+                        <small class="text-light">
+                            宇宙の画像・情報
+                            (すこし時間かかるよ)
+                        </small>
+                    </div>
+
+                </div>
+
+                <div class="stars"></div>
+
+            </a>
+        </div>
+
+        <!-- 動物園 -->
+        <div class="col-6">
+            <a href="{{ url_for('rest.zoo') }}"
+               class="menu-card card shadow-sm border-0 text-decoration-none p-3 zoo-card">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="icon fs-1 lion">
+                        🦁
+                    </div>
+
+                    <div>
+                        <div class="fw-bold">動物園</div>
+                        <small class="text-muted">
+                            動物に餌をあげよう
+                        </small>
+                    </div>
+
+                </div>
+
+            </a>
+        </div>
+
+        <!-- ブロック崩し -->
+        <div class="col-6">
+            <a href="{{ url_for('rest.block_game') }}"
+               class="menu-card card shadow-sm border-0 text-decoration-none p-3 block-card">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="icon fs-1 block-icon">
+                        🧱
+                    </div>
+
+                    <div>
+                        <div class="fw-bold">ブロック崩し</div>
+                        <small class="text-muted">
+                            ミニゲームで休憩
+                        </small>
+                    </div>
+
+                </div>
+
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+
+body{
+    background:
+        linear-gradient(135deg, #f7f9fc, #edf4ff);
+}
+
+/* ---------------- */
+/* カード */
+/* ---------------- */
+
+.menu-card{
+    border-radius: 20px;
+    transition: all 0.25s ease;
+    overflow: hidden;
+    position: relative;
+    min-height: 120px;
+}
+
+.menu-card:hover{
+    transform: translateY(-6px) scale(1.02);
+}
+
+/* ---------------- */
+/* アイコン */
+/* ---------------- */
+
+.icon{
+    transition: transform 0.25s ease;
+}
+
+.menu-card:hover .icon{
+    transform: scale(1.2);
+}
+
+/* ---------------- */
+/* 天気 */
+/* ---------------- */
+
+.weather-card{
+    background:
+        linear-gradient(135deg,#60a5fa,#38bdf8);
+    color: white;
+}
+
+.weather-card .text-muted{
+    color: rgba(255,255,255,0.85) !important;
+}
+
+.cloud{
+    animation: floatCloud 3s ease-in-out infinite;
+}
+
+@keyframes floatCloud{
+    0%{ transform: translateY(0px); }
+    50%{ transform: translateY(-4px); }
+    100%{ transform: translateY(0px); }
+}
+
+/* ---------------- */
+/* NASA */
+/* ---------------- */
+
+.nasa-card{
+    background:
+        linear-gradient(135deg,#0f172a,#1e293b);
+    color: white;
+}
+
+.rocket{
+    animation: rocketMove 2s ease-in-out infinite;
+}
+
+@keyframes rocketMove{
+    0%{ transform: translateY(0px) rotate(-5deg); }
+    50%{ transform: translateY(-5px) rotate(5deg); }
+    100%{ transform: translateY(0px) rotate(-5deg); }
+}
+
+/* 星 */
+
+.stars::before,
+.stars::after{
+    content: "✨";
+    position: absolute;
+    font-size: 12px;
+    animation: twinkle 2s infinite;
+}
+
+.stars::before{
+    top: 10px;
+    right: 15px;
+}
+
+.stars::after{
+    bottom: 10px;
+    right: 40px;
+    animation-delay: 1s;
+}
+
+@keyframes twinkle{
+    0%{ opacity:0.2; }
+    50%{ opacity:1; }
+    100%{ opacity:0.2; }
+}
+
+/* ---------------- */
+/* 動物園 */
+/* ---------------- */
+
+.zoo-card{
+    background:
+        linear-gradient(135deg,#22c55e,#16a34a);
+    color: white;
+}
+
+.zoo-card .text-muted{
+    color: rgba(255,255,255,0.85) !important;
+}
+
+.lion{
+    animation: bounceLion 2s infinite;
+}
+
+@keyframes bounceLion{
+    0%,100%{
+        transform: translateY(0);
+    }
+    50%{
+        transform: translateY(-6px);
+    }
+}
+
+/* ---------------- */
+/* ブロック */
+/* ---------------- */
+
+.block-icon{
+    animation: shakeBlock 2s infinite;
+}
+
+@keyframes shakeBlock{
+    0%{ transform: rotate(0deg); }
+    25%{ transform: rotate(-5deg); }
+    50%{ transform: rotate(5deg); }
+    75%{ transform: rotate(-3deg); }
+    100%{ transform: rotate(0deg); }
+}
+
+/* ---------------- */
+/* タイトル */
+/* ---------------- */
+
+.steam{
+    display: inline-block;
+    animation: steamAnim 2s ease-in-out infinite;
+}
+
+@keyframes steamAnim{
+    0%{
+        transform: translateY(0);
+        opacity: 0.7;
+    }
+    50%{
+        transform: translateY(-4px);
+        opacity: 1;
+    }
+    100%{
+        transform: translateY(-8px);
+        opacity: 0.3;
+    }
+}
+
+/* ---------------- */
+/* スマホ用 */
+/* ---------------- */
+
+@media (max-width: 576px){
+
+    .col-6{
+        width: 100%;
+    }
+
+}
+
+</style>
+
+{% endblock %}

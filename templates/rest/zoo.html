@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1 class="my-4">🐾 動物園</h1>
+<h5 class="my-4">※ &nbsp;餌をあげてね ⇒ &nbsp;右クリック：🍖肉 ,&nbsp;&nbsp; 左クリック：🍎りんご </h5>
+
+<div class="zoo-area" id="zoo">
+    {% for a in animals %}
+            <img src="{{ url_for('static', filename='picture/' ~ a.file) }}"
+            class="animal"
+            data-speed="{{ a.speed }}"
+            data-like="{{ a.like }}"
+            style="
+            left: {{ a.x }}px;
+            top: {{ a.y }}px;
+            width: {{ a.size }}px;
+            ">
+    {% endfor %}
+    <div id="food" class="food">
+        <img id="food-img" src="" alt="" style="width:40px;">
+    </div>
+
+</div>
+
+
+<div class="mt-4">
+    <a href="{{ url_for('rest.index') }}" class="btn btn-secondary">
+        休憩へ
+    </a>
+</div>
+
+<style>
+    .zoo-area {
+        background: #2ecc71;
+        height: 100vh; /* ← フル画面対応 */
+        position: relative;
+        overflow: hidden;
+    }
+
+    .animal {
+        position: absolute;
+        transition: left 3s linear, top 3s linear;
+    }
+
+    .food {
+        position: absolute;
+        display: none;
+        transform: translate(-50%, -50%);
+    }
+
+</style>
+
+<script>
+
+ document.addEventListener("DOMContentLoaded", () => {
+
+    const zoo = document.getElementById("zoo");
+    const food = document.getElementById("food");
+    const animals = document.querySelectorAll(".animal");
+
+    let foodPos = null;
+    let foodType = null;
+
+        // 🍎 左クリック → 草食動物用
+    zoo.addEventListener("click", (e) => {
+        const rect = zoo.getBoundingClientRect();
+        foodPos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        foodType = "apple";
+
+        // 餌画像をセット
+        document.getElementById("food-img").src = "/static/picture/apple.webp";
+
+        food.style.left = foodPos.x + "px";
+        food.style.top = foodPos.y + "px";
+        food.style.display = "block";
+    });
+
+    // 🍖 右クリック → 肉食動物用
+    zoo.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        const rect = zoo.getBoundingClientRect();
+        foodPos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        foodType = "meat";
+
+        // 餌画像をセット
+        document.getElementById("food-img").src = "/static/picture/meat.webp";
+
+        food.style.left = foodPos.x + "px";
+        food.style.top = foodPos.y + "px";
+        food.style.display = "block";
+    });
+
+
+    function getBounds() {
+        const rect = zoo.getBoundingClientRect();
+        return { maxX: rect.width - 50, maxY: rect.height - 50 };
+    }
+
+    animals.forEach(animal => {
+
+        const speed = parseFloat(animal.dataset.speed) || 2;
+        const type = animal.dataset.type;
+        const like = animal.dataset.like;
+
+        function move() {
+
+            const { maxX, maxY } = getBounds();
+
+            let target;
+
+            if (foodPos && like === foodType) {
+                target = { ...foodPos };
+            } else {
+                target = {
+                    x: Math.random() * maxX,
+                    y: Math.random() * maxY
+                };
+            }
+
+            // ランダム揺れ
+            target.x += (Math.random() - 0.5) * 50;
+            target.y += (Math.random() - 0.5) * 50;
+
+            const rect = animal.getBoundingClientRect();
+            const zooRect = zoo.getBoundingClientRect();
+
+            const currentX = rect.left - zooRect.left;
+            const currentY = rect.top - zooRect.top;
+
+            const dx = target.x - currentX;
+            const dy = target.y - currentY;
+
+            const distance = Math.sqrt(dx*dx + dy*dy);
+
+            // 自然な速度
+            const duration = distance * (20 / speed) + 1000;
+
+            animal.style.transition = `left ${duration}ms linear, top ${duration}ms linear`;
+            animal.style.left = target.x + "px";
+            animal.style.top = target.y + "px";
+
+            // 餌に到達したら消す
+            if (foodPos && distance < 30) {
+                food.style.display = "none";
+                foodPos = null;
+            }
+
+            setTimeout(move, duration + Math.random() * 2000);
+        }
+
+        move();
+    });
+
+});
+
+   
+</script>
+
+{% endblock %}

@@ -1,0 +1,49 @@
+<div class="modal-header">
+  <h5 class="modal-title">グループ作成</h5>
+</div>
+
+<div class="modal-body">
+
+<div class="mb-3 group-input-counter-box">
+
+  <label class="form-label group-label">グループ名：</label>
+
+  <div class="input-wrapper">
+
+    <input id="createGroupName"
+           class="form-control counter-input"
+           placeholder="入力してください">
+
+    <div class="char-count" id="groupNameCount">
+      0 / 20
+    </div>
+
+  </div>
+
+
+</div>
+
+  <!-- メンバー選択 -->
+  <div class="mb-3">
+    <label class="form-label group-label">メンバー選択：</label>
+
+    <select id="createMembers" multiple style="width:100%"></select>
+  </div>
+
+</div>
+  
+<div class="modal-footer">
+
+  <!-- エラー表示 -->
+  <div id="groupNameError" class="text-danger small mt-1"></div>
+
+  <button type="button"
+          class="btn btn-outline-secondary"
+          data-bs-dismiss="modal">
+    戻る
+  </button>
+
+  <button type="button" id="createGroupBtn" class="btn btn-primary">
+    グループ作成
+  </button>
+</div>

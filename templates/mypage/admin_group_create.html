@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if current_user.user_id == 1 %}
+
+<div class="container d-flex justify-content-center align-items-start" style="min-height: 80vh; padding-top: 40px;">
+
+    <div style="width: 100%; max-width: 480px;">
+
+        <div class="d-flex flex-wrap align-items-center px-3 gap-3 mb-3">
+            <h4 class="mb-0 text-truncate flex-grow-1">グループ 登録</h4>
+            <div class="d-flex gap-2 flex-shrink-0">
+                <a href="{{ url_for('mypage.index') }}" class="btn btn-outline-secondary btn-sm text-nowrap">
+                    管理者メニューへ戻る
+                </a>
+                <a href="{{ url_for('mypage.group_list') }}" class="btn btn-outline-secondary btn-sm text-nowrap">
+                    グループ一覧へ
+                </a>
+            </div>
+        </div>
+
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+
+        <form method="POST" action="{{ url_for('mypage.admin_group_create') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="card bg-light-subtle shadow-sm p-4">
+
+                <div class="mb-3">
+                    <label class="form-label small text-secondary fw-bold mb-1">
+                        グループ名 <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" name="groupname" id="groupNameInput"
+                        class="form-control group-name-input counter-input" maxlength="20" placeholder="1～20文字"
+                        value="{{ groupname or '' }}">
+                    <div class="field-char-count text-end mt-1 small" style="font-size: 0.75rem; color: #888;">
+                        <span id="charCount">0</span> / 20
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small text-secondary fw-bold mb-1">
+                        メンバー選択 <span class="text-danger">*</span>
+                    </label>
+                    <div class="form-text text-muted small mb-2" style="font-size: 0.75rem;">
+                        <i class="bi bi-info-circle me-1"></i>追加したいメンバーにチェックを入れてください（複数選択可）
+                    </div>
+
+                    <div class="border rounded bg-white p-2 member-scroll-box">
+                        {% for user in users %}
+                        <div class="form-check p-2 border-bottom-dashed">
+                            <input class="form-check-input ms-1" type="checkbox" name="members[]"
+                                value="{{ user.user_id }}" id="user_{{ user.user_id }}" {% if user.user_id in
+                                selected_members %}checked{% endif %}>
+                            <label class="form-check-label ms-2 text-dark" for="user_{{ user.user_id }}">
+                                {{ user.full_name }} <span class="text-muted small">({{ user.department }})</span>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-md px-4 shadow-sm" style="border-radius: 6px;">
+                        <i class="bi bi-check-circle me-2"></i>グループを登録する
+                    </button>
+                </div>
+
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% else %}
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const input = document.getElementById("groupNameInput");
+        const counter = document.getElementById("charCount");
+
+        if (input && counter) {
+            const updateCount = () => {
+                const len = input.value.length;
+                counter.textContent = len;
+
+                if (len >= 20) {
+                    counter.classList.add("text-danger", "fw-bold");
+                } else {
+                    counter.classList.remove("text-danger", "fw-bold");
+                }
+            };
+            input.addEventListener("input", updateCount);
+            updateCount();
+        }
+    });
+</script>
+{% endblock %}

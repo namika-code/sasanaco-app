@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% from "_formhelpers.html" import render_field %}
+
+<div class="py-4 mx-auto" style="max-width: 800px;">
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body text-center">
+
+            <h3 class="fw-bold mb-1">
+                {% if current_user.user_id == 1 %}
+                ⚙ 管理者メニュー
+                {% else %}
+                👤 マイページ
+                {% endif %}
+            </h3>
+
+            <p class="text-muted mb-0">
+                {{ current_user.username }} ／ {{ current_user.department }}部
+            </p>
+
+        </div>
+    </div>
+
+    <!-- フラッシュメッセージ -->
+    {% for message in get_flashed_messages() %}
+    <div class="alert alert-info shadow-sm border-0">
+        {{ message }}
+    </div>
+    {% endfor %}
+
+    <!-- =========================
+        管理者のみ
+    ========================== -->
+    {% if current_user.user_id == 1 %}
+
+    <div class="row g-3 mb-4">
+
+        <!-- ユーザー -->
+        <div class="col-6">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body text-center">
+
+                    <div class="fs-3 mb-2">👥</div>
+
+                    <h6 class="fw-bold mb-3">
+                        ユーザー
+                    </h6>
+
+                    <a href="{{ url_for('mypage.admin_register_form') }}" class="btn btn-primary w-100 mb-2">
+
+                        ユーザー登録
+
+                    </a>
+
+                    <a href="{{ url_for('mypage.user_list') }}" class="btn btn-outline-primary w-100">
+
+                        ユーザー削除
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- グループ -->
+        <div class="col-6">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body text-center">
+
+                    <div class="fs-3 mb-2">👨‍👩‍👧‍👦</div>
+
+                    <h6 class="fw-bold mb-3">
+                        グループ
+                    </h6>
+
+                    <a href="{{ url_for('mypage.admin_group_create') }}" class="btn btn-warning w-100 mb-2">
+
+                        グループ登録
+
+                    </a>
+
+                    <a href="{{ url_for('mypage.group_list') }}" class="btn btn-outline-warning w-100">
+
+                        グループ編集 / 削除
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- タスク -->
+        <div class="col-6">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body text-center">
+
+                    <div class="fs-3 mb-2">📋</div>
+
+                    <h6 class="fw-bold mb-3">
+                        タスク
+                    </h6>
+
+                    <a href="{{ url_for('mypage.admin_task_register') }}" class="btn btn-info text-white w-100 mb-2">
+
+                        タスク登録
+
+                    </a>
+
+                    <a href="{{ url_for('mypage.task_list') }}" class="btn btn-outline-info w-100">
+
+                        タスク削除
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- 在庫 -->
+        <div class="col-6">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body text-center">
+
+                    <div class="fs-3 mb-2">📦</div>
+
+                    <h6 class="fw-bold mb-3">
+                        在庫
+                    </h6>
+
+                    <a href="{{ url_for('mypage.admin_stock_register') }}" class="btn btn-success w-100 mb-2">
+
+                        在庫表 登録
+
+                    </a>
+
+                    <a href="{{ url_for('mypage.stock_list') }}" class="btn btn-outline-success w-100">
+
+                        在庫表 削除
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+<!-- =========================
+        プロフィール
+    ========================== -->
+    <div class="card shadow-sm border-0 profile-card" style="border-radius: 12px; overflow: hidden;">
+
+        <div class="card-header bg-dark text-white py-3">
+            <h5 class="mb-0 fw-bold" style="font-size: 1.05rem;">
+                ✏ プロフィール編集
+            </h5>
+        </div>
+
+        <div class="card-body px-4 py-4 bg-white">
+
+            <form method="POST" action="{{ url_for('mypage.profile_update') }}">
+
+                {{ form.hidden_tag() }}
+
+                <div class="mb-3 custom-form-group">
+                    {{ render_field(form.last_name) }}
+                </div>
+
+                <div class="mb-3 custom-form-group">
+                    {{ render_field(form.first_name) }}
+                </div>
+
+                <div class="mb-4 custom-form-group">
+                    {{ render_field(form.gender) }}
+                </div>
+
+                <div class="text-center">
+                    {{ form.submit(class="btn btn-primary px-4 shadow-sm fw-bold", style="border-radius: 6px;") }}
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

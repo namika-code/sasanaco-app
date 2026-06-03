@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if current_user.user_id == 1 %}
+
+<div class="container d-flex justify-content-center align-items-start" style="min-height: 80vh; padding-top: 40px;">
+
+    <div style="width: 100%; max-width: 900px;">
+
+        <div class="d-flex flex-wrap align-items-center px-3 gap-3 mb-3">
+            <h4 class="mb-0 text-truncate flex-grow-1">ユーザー 一覧</h4>
+            <div class="d-flex gap-2 flex-shrink-0">
+                <a href="{{ url_for('mypage.index') }}" class="btn btn-outline-secondary btn-sm text-nowrap">
+                    管理者メニューへ戻る
+                </a>
+            </div>
+        </div>
+
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+
+        <form method="post" action="{{ url_for('mypage.delete_selected_users') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="card bg-light-subtle shadow-sm mb-4 overflow-hidden" style="border-radius: 12px;">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 custom-task-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center" style="width: 60px;">選択</th>
+                                <th style="width: 100px;">ID</th>
+                                <th style="width: 180px;">ユーザー名</th>
+                                <th style="width: 120px;">所属</th>
+                                <th style="width: 180px;">名前</th>
+                                <th style="width: 100px;">性別</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white">
+                            {% for user in users %}
+                            <tr class="{% if user.user_id == 1 %}table-secondary opacity-75{% endif %}">
+                                <td class="text-center">
+                                    <input type="checkbox" name="user_ids" value="{{ user.user_id }}"
+                                        class="form-check-input user-checkbox" style="cursor: pointer;" {% if
+                                        user.user_id==1 %}disabled{% endif %}>
+                                </td>
+                                <td class="text-code">#{{ user.user_id }}{% if user.user_id == 1 %}(管理者){% endif %}</td>
+                                <td class="text-dark fw-medium">{{ user.username }}</td>
+                                <td>
+                                    {% if user.department %}
+                                    <span class="text-dark">{{ user.department }}</span>
+                                    {% else %}
+                                    <span class="text-muted small opacity-75">未設定</span>
+                                    {% endif %}
+                                </td>
+                                <td class="fw-bold text-dark">{{ user.full_name }}</td>
+                                <td>
+                                    {% if user.gender == 'male' %}
+                                    <span class="text-dark"><i class="bi bi-person-fill text-primary me-1"></i>男性</span>
+                                    {% elif user.gender == 'female' %}
+                                    <span class="text-dark"><i class="bi bi-person-fill text-danger me-1"></i>女性</span>
+                                    {% elif user.gender == 'other' %}
+                                    <span class="text-dark"><i
+                                            class="bi bi-person-fill text-secondary me-1"></i>その他</span>
+                                    {% else %}
+                                    <span class="text-muted small opacity-75"><i
+                                            class="bi bi-person-fill text-secondary me-1"></i>未登録</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mb-5">
+                <button type="button" class="btn btn-outline-danger btn-md px-4 shadow-sm fw-bold"
+                    id="openDeleteModalBtn" data-bs-toggle="modal" data-bs-target="#deleteUsersModal"
+                    style="border-radius: 6px;" disabled>
+                    <i class="bi bi-trash3 me-2"></i>選択したユーザーを削除
+                </button>
+            </div>
+
+            <div class="modal fade" id="deleteUsersModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-sm">
+                    <div class="modal-content border-0 shadow-lg" style="border-radius: 14px;">
+                        <div class="modal-body text-center p-4">
+                            <div class="text-danger mb-3" style="font-size: 2rem;">
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-2">ユーザーの削除確認</h6>
+                            <p class="text-secondary small mb-0 px-1">
+                                選択したユーザーを完全に削除しますか？<br>
+                                <span class="text-danger fw-bold" style="font-size: 0.75rem;">※この操作は取り消せません。</span>
+                            </p>
+                        </div>
+                        <div class="modal-footer border-top-0 d-flex justify-content-center gap-2 pb-4 pt-0">
+                            <button type="button" class="btn btn-light btn-sm px-3 border" data-bs-dismiss="modal"
+                                style="border-radius: 6px;">キャンセル</button>
+                            <button type="submit" class="btn btn-danger btn-sm px-3"
+                                style="border-radius: 6px;">削除する</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% else %}
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const checkboxes = document.querySelectorAll('.user-checkbox');
+        const modalDeleteBtn = document.getElementById("openDeleteModalBtn");
+
+        function updateDeleteButton() {
+            const checkedCount = document.querySelectorAll('.user-checkbox:checked').length;
+            modalDeleteBtn.disabled = checkedCount === 0;
+
+            if (checkedCount > 0) {
+                modalDeleteBtn.className = "btn btn-danger btn-md px-4 shadow-sm fw-bold";
+            } else {
+                modalDeleteBtn.className = "btn btn-outline-danger btn-md px-4 shadow-sm fw-bold";
+            }
+        }
+
+        updateDeleteButton();
+        checkboxes.forEach(cb => cb.addEventListener("change", updateDeleteButton));
+    });
+</script>
+{% endblock %}

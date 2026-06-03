@@ -1,0 +1,22 @@
+<!-- タスク一覧画面 モーダルの処理 -->
+<!-- 削除Modal -->
+<div class="modal fade" id="deleteModal_{{ task.task_id }}" tabindex="-1" aria-labelledby="deleteModalLabel_{{ task.task_id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+        <p>このタスクを削除しますか？</p>
+        <p><strong>　タイトル：{{ task.title }}</strong><br>
+                  　　内容：{{ task.task_content[:10] }}{% if task.task_content|length > 10 %}…{% endif %}</p>
+      </div>
+      <div class="modal-footer">
+        <!-- コメント削除キャンセルボタン -->
+        <button type="button" class="btn btn-outline-dark btn-sm" data-bs-dismiss="modal">キャンセル</button>
+        <!-- コメント削除ボタン -->
+        <form method="post" action="{{ url_for('task.delete', task_id=task.task_id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-outline-danger btn-sm">削除する</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

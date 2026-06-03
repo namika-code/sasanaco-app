@@ -1,0 +1,392 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="d-flex flex-column flex-md-row
+            align-items-md-center
+            gap-3 mb-4">
+
+    <h1 class="gallery-title my-0">
+        🌌 NASA Gallery
+    </h1>
+
+    <!-- 検索フォーム -->
+    <form method="GET"
+          action="{{ url_for('rest.gallery') }}"
+          class="search-form">
+
+        <div class="input-group">
+
+            <input
+                type="text"
+                name="keyword"
+                class="form-control bg-dark text-light border-secondary"
+                placeholder="Search space photos..."
+                value="{{ keyword }}"
+            >
+
+            <button class="btn btn-primary">
+                Search
+            </button>
+
+        </div>
+    </form>
+
+</div>
+
+<!-- ============================= -->
+<!-- 検索ガイド -->
+<!-- ============================= -->
+<div class="card mb-4 space-card">
+    <div class="card-body">
+        <div class="row">
+
+            <div class="col-md-4 mb-3">
+                <strong>🌍 宇宙・惑星</strong>
+
+                <div class="d-flex flex-wrap gap-2 mt-2">
+
+                    <a href="{{ url_for('rest.gallery', keyword='full moon') }}"
+                    class="btn btn-outline-primary btn-sm rounded-pill space-btn">
+                        full moon（満月）
+                    </a>
+
+                    <a href="{{ url_for('rest.gallery', keyword='lunar eclipse') }}"
+                    class="btn btn-outline-primary btn-sm rounded-pill space-btn">
+                        lunar eclipse（月食）
+                    </a>
+
+                    <a href="{{ url_for('rest.gallery', keyword='earth') }}"
+                    class="btn btn-outline-primary btn-sm rounded-pill space-btn">
+                        earth（地球）
+                    </a>
+
+                    <a href="{{ url_for('rest.gallery', keyword='jupiter') }}"
+                    class="btn btn-outline-primary btn-sm rounded-pill space-btn">
+                        jupiter（木星）
+                    </a>
+
+                    <a href="{{ url_for('rest.gallery', keyword='saturn') }}"
+                    class="btn btn-outline-primary btn-sm rounded-pill space-btn">
+                        saturn（土星）
+                    </a>
+
+                    <a href="{{ url_for('rest.gallery', keyword='nebula') }}"
+                    class="btn btn-outline-primary btn-sm rounded-pill space-btn">
+                        nebula（星雲）
+                    </a>
+
+                    <a href="{{ url_for('rest.gallery', keyword='milky way') }}"
+                    class="btn btn-outline-primary btn-sm rounded-pill space-btn">
+                        milky way（天の川）
+                    </a>
+
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <strong>🚀 宇宙開発</strong>
+
+                <div class="d-flex flex-wrap gap-2 mt-2">
+
+                    <a href="{{ url_for('rest.gallery', keyword='rocket launch') }}"
+                    class="btn btn-outline-success btn-sm rounded-pill space-btn">
+                        rocket launch（ロケット打上げ）
+                    </a>
+
+                    <a href="{{ url_for('rest.gallery', keyword='iss') }}"
+                    class="btn btn-outline-success btn-sm rounded-pill space-btn">
+                        iss（宇宙ステーション）
+                    </a>
+
+                    <a href="{{ url_for('rest.gallery', keyword='apollo mission') }}"
+                    class="btn btn-outline-success btn-sm rounded-pill space-btn">
+                        apollo（アポロ計画）
+                    </a>
+
+                    <a href="{{ url_for('rest.gallery', keyword='hubble telescope') }}"
+                    class="btn btn-outline-success btn-sm rounded-pill space-btn">
+                        hubble（ハッブル望遠鏡）
+                    </a>
+
+                    <a href="{{ url_for('rest.gallery', keyword='satellite earth') }}"
+                    class="btn btn-outline-success btn-sm rounded-pill space-btn">
+                        satellite（人工衛星）
+                    </a>
+
+                    <a href="{{ url_for('rest.gallery', keyword='astronaut spacewalk') }}"
+                    class="btn btn-outline-success btn-sm rounded-pill space-btn">
+                        astronaut（宇宙飛行士）
+                    </a>
+
+                    <a href="{{ url_for('rest.gallery', keyword='mars rover') }}"
+                    class="btn btn-outline-success btn-sm rounded-pill space-btn">
+                        mars rover（火星探査車）
+                    </a>
+
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <strong>🌠 人気・絶景</strong>
+
+                <div class="d-flex flex-wrap gap-2 mt-2">
+
+                    <a href="{{ url_for('rest.gallery', keyword='aurora borealis') }}"
+                    class="btn btn-outline-warning btn-sm rounded-pill space-btn">
+                        aurora（オーロラ）
+                    </a>
+
+                    <a href="{{ url_for('rest.gallery', keyword='pillars') }}"
+                    class="btn btn-outline-warning btn-sm rounded-pill space-btn">
+                        pillars（創造の柱）
+                    </a>
+
+                    <a href="{{ url_for('rest.gallery', keyword='supernova') }}"
+                    class="btn btn-outline-warning btn-sm rounded-pill space-btn">
+                        supernova（超新星）
+                    </a>
+
+                    <a href="{{ url_for('rest.gallery', keyword='black hole simulation') }}"
+                    class="btn btn-outline-warning btn-sm rounded-pill space-btn">
+                        black hole（ブラックホール）
+                    </a>
+
+                    <a href="{{ url_for('rest.gallery', keyword='andromeda') }}"
+                    class="btn btn-outline-warning btn-sm rounded-pill space-btn">
+                        andromeda（アンドロメダ）
+                    </a>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ===================== -->
+<!-- 現在のキーワード -->
+<!-- ===================== -->
+<h5 class="mb-3 keyword-text">
+    Keyword: {{ keyword }}
+</h5>
+
+<!-- ===================== -->
+<!-- 画像 -->
+<!-- ===================== -->
+<div class="row">
+
+    {% for item in items[:30] %}
+    <div class="col-6 col-md-3 mb-4">
+
+        {% if item.links and item.links[0] %}
+            <div class="gallery-img">
+                <img 
+                    src="{{ item.links[0].href }}"
+                    class="img-fluid"
+                    loading="lazy"
+                >
+            </div>
+        {% endif %}
+
+    </div>
+    {% endfor %}
+</div>
+
+<div class="mt-4 d-flex align-items-center">
+    <div>
+        <a href="{{ url_for('rest.nasa') }}" class="btn btn-secondary">
+            NASAへ
+        </a>
+        <a href="{{ url_for('rest.index') }}" class="btn btn-secondary">
+            休憩へ
+        </a>
+    </div>
+
+    <h6 class="my-0 ms-auto small credit-text">
+        Credit: NASA
+    </h6>
+</div>
+
+<style>
+    body {
+        background:
+            radial-gradient(circle at top, #1b2735 0%, #090a0f 60%);
+        color: #e6edf3;
+        min-height: 100vh;
+    }
+
+    /* タイトル */
+    .gallery-title {
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        color: #ffffff;
+        text-shadow:
+            0 0 12px rgba(120,180,255,0.55),
+            0 0 25px rgba(80,120,255,0.25);
+    }
+
+    /* ガラス風カード */
+    .space-card {
+        background: rgba(20, 28, 40, 0.72);
+        border: 1px solid rgba(255,255,255,0.12);
+        backdrop-filter: blur(14px);
+
+        border-radius: 24px;
+
+        box-shadow:
+            0 10px 40px rgba(0,0,0,0.45),
+            inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .space-card strong {
+        color: #ffffff;
+        font-size: 1rem;
+        letter-spacing: 0.5px;
+    }
+
+    /* ボタン */
+    .space-btn {
+        border-radius: 999px !important;
+
+        padding: 0.45rem 0.9rem;
+
+        font-weight: 500;
+        letter-spacing: 0.3px;
+
+        transition: all 0.25s ease;
+
+        backdrop-filter: blur(8px);
+
+        border-width: 1px;
+    }
+
+    .space-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 15px rgba(100,160,255,0.4);
+    }
+
+    /* 青系 */
+    .btn-outline-primary.space-btn {
+        color: #8ecbff;
+
+        background: rgba(70,120,255,0.12);
+
+        border-color: rgba(120,180,255,0.45);
+    }
+
+    .btn-outline-primary.space-btn:hover {
+        background: rgba(90,150,255,0.25);
+
+        color: white;
+
+        transform: translateY(-2px);
+
+        box-shadow:
+            0 0 15px rgba(100,160,255,0.55),
+            0 0 35px rgba(100,160,255,0.2);
+    }
+
+    /* 緑系 */
+    .btn-outline-success.space-btn {
+        color: #8fffd1;
+
+        background: rgba(0,255,170,0.08);
+
+        border-color: rgba(80,255,190,0.35);
+    }
+
+    .btn-outline-success.space-btn:hover {
+        background: rgba(0,255,180,0.18);
+
+        color: white;
+
+        transform: translateY(-2px);
+
+        box-shadow:
+            0 0 15px rgba(0,255,170,0.45),
+            0 0 35px rgba(0,255,170,0.18);
+    }
+
+    /* 黄色系 */
+    .btn-outline-warning.space-btn {
+        color: #ffe28a;
+
+        background: rgba(255,200,0,0.10);
+
+        border-color: rgba(255,220,120,0.35);
+    }
+
+    .btn-outline-warning.space-btn:hover {
+        background: rgba(255,210,0,0.18);
+
+        color: white !important;
+
+        transform: translateY(-2px);
+
+        box-shadow:
+            0 0 15px rgba(255,210,0,0.45),
+            0 0 35px rgba(255,210,0,0.18);
+    }
+
+    /* キーワード */
+    .keyword-text {
+        color: #9fb3c8 !important;
+    }
+
+    /* 画像 */
+    .gallery-img {
+        border-radius: 16px;
+        overflow: hidden;
+        transition: 0.3s;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+    }
+
+    .gallery-img img {
+        width: 100%;
+        aspect-ratio: 1/1;
+        object-fit: cover;
+    }
+
+    .gallery-img:hover {
+        transform: scale(1.03);
+        box-shadow: 0 0 25px rgba(120,180,255,0.35);
+    }
+
+    /* Credit */
+    .credit-text {
+        color: #8b9bb0 !important;
+    }
+    
+
+    .form-control {
+        background: rgba(10,15,25,0.85) !important;
+        border: 1px solid rgba(120,180,255,0.25) !important;
+
+        color: #e6edf3 !important;
+
+        border-radius: 14px !important;
+
+        box-shadow: none !important;
+    }
+
+    .form-control:focus {
+        border-color: rgba(120,180,255,0.6) !important;
+
+        box-shadow:
+            0 0 0 0.15rem rgba(100,160,255,0.15),
+            0 0 18px rgba(100,160,255,0.25) !important;
+
+        background: rgba(10,15,25,0.95) !important;
+    }
+
+    .form-control::placeholder {
+        color: #8fa3b8;
+    }
+
+    .search-form {
+        width: 400px;
+    }
+</style>
+
+{% endblock %}

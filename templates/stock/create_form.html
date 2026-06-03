@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container d-flex justify-content-center align-items-start" style="min-height: 80vh; padding-top: 40px;">
+
+    <div class="card shadow-lg p-4" style="width: 100%; max-width: 480px; border-radius: 16px;">
+
+        <div class="text-center mb-3">
+            <h3 class="fw-bold m-0">
+                在庫表 新規作成
+            </h3>
+        </div>
+
+        <!-- フラッシュメッセージ -->
+        {% for message in get_flashed_messages() %}
+            <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+
+        <!-- 全体エラー -->
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                入力内容にエラーがあります。各項目を確認してください。
+            </div>
+        {% endif %}
+
+        <form method="post" novalidate onsubmit="return checkStockQuantity()">
+            {{ form.hidden_tag() }}
+
+            <!-- ===================== -->
+            <!-- 商品情報 -->
+            <!-- ===================== -->
+            <h5 class="mb-3">商品情報</h5>
+
+            <!-- 商品コード -->
+            <div class="mb-3 text-start">
+                {{ form.product_code.label }}
+                <span class="text-muted small">　※英数字のみ</span>
+
+                {{ form.product_code(
+                    id="product_code",
+                    class="form-control " + ("is-invalid" if form.product_code.errors else ""),
+                    maxlength=PRODUCT_CODE_MAX,
+                    style="text-transform: uppercase;",
+                    oninput="this.value = this.value.toUpperCase()",
+                    placeholder="{}文字以内".format(PRODUCT_CODE_MAX),
+                ) }}
+
+                <div class="field-char-count" id="productCodeCount">0 / {{ PRODUCT_CODE_MAX }}</div>
+
+                <div class="invalid-feedback">
+                    {% for error in form.product_code.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 商品名 -->
+            <div class="mb-3 text-start">
+                {{ form.product.label }}
+
+                {{ form.product(
+                    id="product_name",
+                    class="form-control " + ("is-invalid" if form.product.errors else ""),
+                    maxlength=PRODUCT_NAME_MAX,
+                    placeholder="{}文字以内".format(PRODUCT_NAME_MAX),
+                ) }}
+
+                <div class="field-char-count" id="productNameCount">0 / {{ PRODUCT_NAME_MAX }}</div>
+
+                <div class="invalid-feedback">
+                    {% for error in form.product.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- カテゴリ -->
+            <div class="mb-3 text-start">
+                {{ form.product_category.label }}
+
+                <div>
+                    {% for subfield in form.product_category %}
+                        <div class="form-check">
+                            {{ subfield(class="form-check-input " + ("is-invalid" if form.product_category.errors else "")) }}
+                            {{ subfield.label(class="form-check-label") }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="text-danger small">
+                    {% for error in form.product_category.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 最小在庫 -->
+            <div class="mb-3 text-start">
+                {{ form.min_stock.label }}
+                {{ form.min_stock(
+                    class="form-control " + ("is-invalid" if form.min_stock.errors else ""),
+                    min=STOCK_QUANTITY_MIN,
+                    max=STOCK_QUANTITY_MAX
+                ) }}
+                <div class="invalid-feedback">
+                    {% for error in form.min_stock.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <hr>
+
+            <!-- ===================== -->
+            <!-- 在庫情報 -->
+            <!-- ===================== -->
+            <h5 class="mb-3">初期入庫</h5>
+
+            <!-- 日付 -->
+            <div class="mb-3 text-start">
+                {{ form.inout_date.label }}
+                {{ form.inout_date(
+                    class="form-control " + ("is-invalid" if form.inout_date.errors else ""),
+                    max=DATE_MAX
+                ) }}
+                <div class="invalid-feedback d-block">
+                    {% for error in form.inout_date.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 数量 -->
+            <div class="mb-3 text-start">
+                {{ form.stock_quantity.label }}
+                {{ form.stock_quantity(
+                    class="form-control " + ("is-invalid" if form.stock_quantity.errors else ""),
+                    min=STOCK_QUANTITY_MIN,
+                    max=STOCK_QUANTITY_MAX,
+                    type="number",
+                    step=1,
+                ) }}
+                <div class="invalid-feedback">
+                    {% for error in form.stock_quantity.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 備考 -->
+            <div class="mb-3 text-start">
+                {{ form.note.label }}
+
+                {{ form.note(
+                    id="note",
+                    class="form-control " + ("is-invalid" if form.note.errors else ""),
+                    maxlength=NOTE_MAX
+                ) }}
+
+                <div class="field-char-count" id="noteCount">0 / {{ NOTE_MAX }}</div>
+
+                <div class="invalid-feedback">
+                    {% for error in form.note.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="d-grid mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    登録
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<div class="text-center mt-3 mb-5">
+    <a href="{{ url_for('stock.index') }}" class="btn btn-secondary">
+        一覧へ戻る
+    </a>
+</div>
+
+<script>
+// =========================
+// 入力制限
+// =========================
+document.addEventListener("DOMContentLoaded", () => {
+
+    window.checkStockQuantity = function () {
+
+        // 必須項目チェック
+        const requiredFields = [
+            '[name="product_code"]',
+            '[name="product"]',
+            '[name="min_stock"]',
+            '[name="inout_date"]',
+            '[name="stock_quantity"]'
+        ];
+
+        for (const selector of requiredFields) {
+
+            const field = document.querySelector(selector);
+
+            if (!field) continue;
+
+            // 未入力なら confirm 出さない
+            if (field.value.trim() === "") {
+                return true;
+            }
+        }
+
+        // カテゴリ未選択チェック
+        const categoryChecked = document.querySelector(
+            '[name="product_category"]:checked'
+        );
+
+        if (!categoryChecked) {
+            return true;
+        }
+
+        // 数量確認
+        const qtyInput = document.querySelector(
+            '[name="stock_quantity"]'
+        );
+
+        if (!qtyInput) return true;
+        const qty = qtyInput.value;
+
+        if (qty === "0") {
+            return confirm(
+                "入庫数量が0です。このまま登録しますか？"
+            );
+        }
+
+        return true;
+    };
+
+    const MAX = Number({{ STOCK_QUANTITY_MAX | tojson }});
+    const MIN = Number({{ STOCK_QUANTITY_MIN | tojson }});
+
+    const minStockInput = document.querySelector('[name="min_stock"]');
+    if (minStockInput) {
+        minStockInput.addEventListener("input", () => {
+            let value = Number(minStockInput.value);
+            if (isNaN(value)) return;
+            if (value > MAX) minStockInput.value = MAX;
+            if (value < MIN) minStockInput.value = MIN;
+        });
+    }
+
+    const stockQtyInput = document.querySelector('[name="stock_quantity"]');
+    if (stockQtyInput) {
+        stockQtyInput.addEventListener("input", () => {
+            let value = Number(stockQtyInput.value);
+            if (isNaN(value)) return;
+            if (value > MAX) stockQtyInput.value = MAX;
+            if (value < MIN) stockQtyInput.value = MIN;
+        });
+    }
+
+    const productCodeInput = document.querySelector('[name="product_code"]');
+
+    if (productCodeInput) {
+
+        const MAX = {{ PRODUCT_CODE_MAX }};
+
+        productCodeInput.addEventListener("focus", () => {
+            productCodeInput.setAttribute("inputmode", "latin");
+            productCodeInput.style.imeMode = "inactive"; // 効く環境のみ
+        });
+
+        productCodeInput.addEventListener("input", () => {
+
+            let v = productCodeInput.value;
+
+            // 英数字以外削除
+            v = v.replace(/[^a-zA-Z0-9]/g, '');
+
+            // 大文字化
+            v = v.toUpperCase();
+
+            // 文字数制限
+            if (v.length > MAX) {
+                v = v.slice(0, MAX);
+            }
+
+            productCodeInput.value = v;
+        });
+    }
+
+    // =========================
+    // 文字数カウンタ
+    // =========================
+    function bindCharCounter(inputId, counterId, max) {
+
+        const input = document.getElementById(inputId);
+        const counter = document.getElementById(counterId);
+
+        if (!input || !counter) return;
+
+        const update = () => {
+
+            const len = input.value.length;
+
+            counter.textContent = `${len} / ${max}`;
+
+            if (len > max) {
+                counter.style.color = "red";
+            } else if (len > max * 0.8) {
+                counter.style.color = "orange";
+            } else {
+                counter.style.color = "#888";
+            }
+        };
+
+        input.addEventListener("input", update);
+
+        update();
+    }
+
+    bindCharCounter("product_code", "productCodeCount", {{ PRODUCT_CODE_MAX }});
+    bindCharCounter("product_name", "productNameCount", {{ PRODUCT_NAME_MAX }});
+    bindCharCounter("note", "noteCount", {{ NOTE_MAX }});
+
+});
+
+</script>
+
+{% endblock %}

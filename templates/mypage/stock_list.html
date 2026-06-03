@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if current_user.user_id == 1 %}
+
+<div class="container d-flex justify-content-center align-items-start" style="min-height: 80vh; padding-top: 40px;">
+
+    <div style="width: 100%; max-width: 900px;">
+
+        <!-- タイトルとボタンのレイアウト調整: スマホで折り返し対応 -->
+        <div class="d-flex flex-wrap align-items-center px-3 gap-3 mb-3">
+            <h4 class="mb-0 text-truncate flex-grow-1">在庫表 一覧</h4>
+            <div class="d-flex gap-2 flex-shrink-0">
+                <a href="{{ url_for('mypage.index') }}" class="btn btn-outline-secondary btn-sm text-nowrap">
+                    管理者メニューへ戻る
+                </a>
+                <a href="{{ url_for('stock.index') }}" class="btn btn-outline-dark btn-sm text-nowrap">
+                    在庫管理へ
+                </a>
+            </div>
+        </div>
+
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+
+        <form method="post" action="{{ url_for('mypage.delete_selected_stocks') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="card bg-light-subtle shadow-sm mb-3 overflow-hidden" style="border-radius: 12px;">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 custom-task-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center" style="width: 60px;">選択</th>
+                                <th style="width: 80px;">ID</th>
+                                <th style="width: 160px;">商品コード</th>
+                                <th style="width: 260px;">商品名</th>
+                                <th style="width: 180px;">カテゴリ</th>
+                                <th style="width: 140px;" class="text-end pe-4">在庫履歴数</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white">
+                            {% for product in products %}
+                            <tr>
+                                <td class="text-center">
+                                    <input type="checkbox" name="product_ids" value="{{ product.product_id }}"
+                                        class="form-check-input stock-checkbox" style="cursor: pointer;">
+                                </td>
+                                <td class="text-code">#{{ product.product_id }}</td>
+                                <td class="text-code fw-medium text-secondary">{{ product.product_code }}</td>
+                                <td class="text-dark fw-bold">{{ product.product }}</td>
+                                <td>
+                                    {% if product.product_category %}
+                                    <span class="badge bg-secondary-subtle text-secondary-emphasis border px-2 py-1"
+                                        style="border-radius: 4px; font-weight: 500;">
+                                        {{ product.product_category }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted small opacity-75">未設定</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4 text-code fw-bold">
+                                    {% set history_count = product.stocks|length %}
+                                    {% if history_count > 0 %}
+                                    <span class="text-dark">{{ history_count }} <span
+                                            class="text-muted small fw-normal">件</span></span>
+                                    {% else %}
+                                    <span class="text-muted opacity-50 fw-normal" style="font-size: 0.9rem;">0 件</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="d-flex mb-5">
+                <button type="button" class="btn btn-outline-danger btn-md px-4 shadow-sm fw-bold"
+                    id="openDeleteModalBtn" data-bs-toggle="modal" data-bs-target="#deleteStocksModal"
+                    style="border-radius: 6px;" disabled>
+                    <i class="bi bi-trash3 me-2"></i>選択した在庫表を削除
+                </button>
+            </div>
+
+            <div class="modal fade" id="deleteStocksModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-sm">
+                    <div class="modal-content border-0 shadow-lg" style="border-radius: 14px;">
+                        <div class="modal-body text-center p-4">
+                            <div class="text-danger mb-3" style="font-size: 2rem;">
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-2">在庫表の削除確認</h6>
+                            <p class="text-secondary small mb-0 px-1">
+                                選択した商品を在庫表から完全に削除しますか？<br>
+                                <span class="text-danger fw-bold"
+                                    style="font-size: 0.75rem;">※紐づくすべての在庫履歴データも同時に削除されます。</span>
+                            </p>
+                        </div>
+                        <div class="modal-footer border-top-0 d-flex justify-content-center gap-2 pb-4 pt-0">
+                            <button type="button" class="btn btn-light btn-sm px-3 border" data-bs-dismiss="modal"
+                                style="border-radius: 6px;">キャンセル</button>
+                            <button type="submit" class="btn btn-danger btn-sm px-3"
+                                style="border-radius: 6px;">削除する</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% else %}
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const checkboxes = document.querySelectorAll('.stock-checkbox');
+        const modalDeleteBtn = document.getElementById("openDeleteModalBtn");
+
+        function updateDeleteButton() {
+            const checkedCount = document.querySelectorAll('.stock-checkbox:checked').length;
+            modalDeleteBtn.disabled = checkedCount === 0;
+
+            if (checkedCount > 0) {
+                modalDeleteBtn.className = "btn btn-danger btn-md px-4 shadow-sm fw-bold";
+            } else {
+                modalDeleteBtn.className = "btn btn-outline-danger btn-md px-4 shadow-sm fw-bold";
+            }
+        }
+
+        updateDeleteButton();
+        checkboxes.forEach(cb => cb.addEventListener("change", updateDeleteButton));
+    });
+</script>
+{% endblock %}

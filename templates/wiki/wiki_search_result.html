@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container py-5" style="max-width: 800px;">
+    <div class="result-card shadow-sm">
+
+        {% if error %}
+            <div class="text-center">
+                <div class="error-icon mb-3">
+                    😢
+                </div>
+                <h2 class="fw-bold mb-3">
+                    {{ error }}
+                </h2>
+
+                <a href="{{ url_for('wiki.search') }}"
+                   class="btn back-btn mt-3">
+                    戻る
+                </a>
+            </div>
+        {% else %}
+
+            <div class="mb-4">
+                <div class="result-badge mb-3">
+                    Wikipedia
+                </div>
+
+                <h2 class="fw-bold result-title">
+                    {{ keyword }}
+                </h2>
+            </div>
+
+            <div class="summary-box">
+                {{ summary }}...
+            </div>
+
+            <div class="d-flex gap-3 mt-4 flex-wrap">
+                <a href="{{ url }}"
+                   target="_blank"
+                   class="btn read-btn">
+
+                    📖 Read more
+                </a>
+                <a href="{{ url_for('wiki.search') }}"
+                   class="btn back-btn">
+                    ← 戻る
+                </a>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<style>
+body{
+    background:
+        linear-gradient(135deg,#f8fbff,#eef5ff);
+}
+
+/* カード */
+.result-card{
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+}
+
+/* タイトル */
+.result-title{
+    font-size: 2rem;
+}
+
+/* バッジ */
+.result-badge{
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: #dbeafe;
+    color: #2563eb;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* 要約 */
+.summary-box{
+    line-height: 1.9;
+    font-size: 1.05rem;
+    color: #374151;
+    background: #f8fafc;
+    border-radius: 18px;
+    padding: 24px;
+}
+
+/* ボタン */
+.read-btn{
+    border-radius: 999px;
+    background:
+        linear-gradient(135deg,#3b82f6,#2563eb);
+    color: white;
+    border: none;
+    padding: 10px 22px;
+}
+.back-btn{
+    border-radius: 999px;
+    background: #e5e7eb;
+    color: #374151;
+    border: none;
+    padding: 10px 22px;
+}
+
+/* エラー */
+.error-icon{
+    font-size: 70px;
+}
+</style>
+
+{% endblock %}
