@@ -1,0 +1,89 @@
+teamsasanaco/
+├─ alert/
+│   └─ views.py
+├─ auth/
+│   └─ views.py
+├─ migrations/
+├─ mypage/
+│   └─ views.py
+├─ rest/
+│   └─ views.py
+├─ static/
+│   ├─ css/
+│   │   └─ style.css
+│   ├─ js/
+│   │   ├─ block_game.js
+│   │   ├─ group_create.js
+│   │   ├─ group_edit.js
+│   │   ├─ group_guard.js
+│   │   ├─ group_shared.js
+│   │   ├─ group_views.js
+│   │   ├─ state.js
+│   │   ├─ task.js
+│   │   └─ task_init.js
+│   └─ picture/
+├─ stock/
+│   └─ views.py
+├─ task/
+│   └─ views.py
+├─ templates/
+│   ├─ auth/
+│   │   ├─ login_form.html
+│   │   └─ register_form.html
+│   ├─ errors/
+│   │   ├─ 404.html
+│   │   └─ 500.html
+│   ├─ mypage/
+│   │   ├─ admin_group_create.html
+│   │   ├─ admin_group_edit.html
+│   │   ├─ admin_register_form.html
+│   │   ├─ admin_stock_register.html
+│   │   ├─ admin_task_register.html
+│   │   ├─ group_list.html
+│   │   ├─ index.html
+│   │   ├─ stock_list.html
+│   │   ├─ task_list.html
+│   │   └─ user_list.html
+│   ├─ rest/
+│   │   ├─ block_game.html
+│   │   ├─ gallery.html
+│   │   ├─ index.html
+│   │   ├─ nasa.html
+│   │   ├─ weather.html
+│   │   ├─ zoo.html
+│   ├─ stock/
+│   │   ├─ create_form.html
+│   │   ├─ detail.html
+│   │   ├─ graph.html
+│   │   ├─ index.html
+│   │   └─ inout.html
+│   ├─ task/
+│   │   ├─ modal/
+│   │   │     ├─ modal_create_group.html
+│   │   │     ├─ modal_edit_group.html
+│   │   │     ├─ modal_task_delete.html
+│   │   │     └─ modal_task_detail.html
+│   │   ├─ create_task.html
+│   │   ├─ index.html
+│   │   └─ update_task.html
+│   ├─ top/
+│   │   └─ index.html
+│   ├─ wiki/
+│   │   ├─ wiki_search.html
+│   │   └─ wiki_search_result.html
+│   ├─ _formhelpers.html
+│   └─ base.html
+├─ top/
+│   └─ views.py
+├─ wiki/
+│   └─ views.py
+├─ app.py
+├─ config.py
+├─ constants.py
+├─ forms.py
+├─ models.py
+├─ views.py
+├─ .env.example
+├─ .gitignore
+├─ requirements.txt
+└─ environment.yml
